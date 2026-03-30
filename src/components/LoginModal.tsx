@@ -6,7 +6,7 @@ import "./loginModel.css"
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 interface LoginModalProps {
   visible: boolean;
