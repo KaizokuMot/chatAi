@@ -4,7 +4,7 @@ import {
   SendOutlined, RobotOutlined, LogoutOutlined, LoginOutlined,
    SearchOutlined, BellOutlined, InfoCircleOutlined,
    DeleteOutlined,
-  AppstoreOutlined, MenuOutlined, SettingOutlined, BarChartOutlined,
+  AppstoreOutlined, MenuOutlined, BarChartOutlined,
   MenuFoldOutlined, BulbOutlined
 } from '@ant-design/icons';
 import { auth, db } from '../firebase';
@@ -27,7 +27,7 @@ const Chat: React.FC = () => {
   const [loginModalVisible, setLoginModalVisible] = useState(false);
   
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [apiUrl, setApiUrl] = useState(() => localStorage.getItem('apiUrl') || import.meta.env.VITE_OLLAMA_ENDPOINT);
+  const [apiUrl, setApiUrl] = useState(() => localStorage.getItem('apiUrl') || import.meta.env.VITE_OLLAMA_ENDPOINT || "https://necessitative-freeda-serologically.ngrok-free.dev/api/chat");
   
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
   
@@ -283,9 +283,9 @@ const Chat: React.FC = () => {
           <div className="menu-item" onClick={() => setDarkMode(!darkMode)}>
             <BulbOutlined /> <span style={{ marginLeft: 12 }}>{darkMode ? 'Light Mode' : 'Dark Mode'}</span>
           </div>
-          <div className="menu-item" onClick={() => setSettingsVisible(true)}>
+          {/* <div className="menu-item" onClick={() => setSettingsVisible(true)}>
             <SettingOutlined /> <span style={{ marginLeft: 12 }}>Settings</span>
-          </div>
+          </div> */}
           {/* <div className="menu-item">
             <QuestionCircleOutlined /> <span style={{ marginLeft: 12 }}>Updates & FAQ</span>
           </div> */}
