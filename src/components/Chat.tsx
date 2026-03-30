@@ -2,9 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Input, Button, Spin, Checkbox, message } from 'antd';
 import { 
   SendOutlined, RobotOutlined, LogoutOutlined, LoginOutlined,
-  SettingOutlined, SearchOutlined, BellOutlined, InfoCircleOutlined,
-  PaperClipOutlined, AudioOutlined, DeleteOutlined,
-  AppstoreOutlined, MenuOutlined, MessageOutlined, BarChartOutlined, QuestionCircleOutlined,
+   SearchOutlined, BellOutlined, InfoCircleOutlined,
+   DeleteOutlined,
+  AppstoreOutlined, MenuOutlined,  BarChartOutlined,
   MenuFoldOutlined, BulbOutlined
 } from '@ant-design/icons';
 import { auth, db } from '../firebase';
