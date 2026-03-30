@@ -27,7 +27,9 @@ const Chat: React.FC = () => {
   const [loginModalVisible, setLoginModalVisible] = useState(false);
   
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [apiUrl, setApiUrl] = useState(() => localStorage.getItem('apiUrl') || import.meta.env.VITE_OLLAMA_ENDPOINT || 'http://localhost:11434/api/chat');
+  const [apiUrl, setApiUrl] = useState(() => localStorage.getItem('apiUrl') 
+  || import.meta.env.VITE_OLLAMA_ENDPOINT 
+  || 'https://necessitative-freeda-serologically.ngrok-free.dev/api/chat');
   
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
   
@@ -61,7 +63,7 @@ const Chat: React.FC = () => {
         body: JSON.stringify({
           model: modelName,
           messages: [
-            { role: "system", content: "You are a helpful AI assistant. Generate a short, friendly greeting." },
+            // { role: "system", content: "You are a helpful AI assistant. Generate a short, friendly greeting." },
             { role: "user", content: promptText }
           ],
           stream: false
@@ -266,29 +268,29 @@ const Chat: React.FC = () => {
         
         <div className="menu-list" style={{ marginTop: 16 }}>
           <div className="menu-item active">
-            <MessageOutlined /> <span style={{ marginLeft: 12 }}>AI Chat Helper</span>
+            <MessageOutlined /> <span style={{ marginLeft: 12 }}>ChatAi</span>
           </div>
           <div className="menu-item">
             <AppstoreOutlined /> <span style={{ marginLeft: 12 }}>Templates</span>
-            <span className="menu-tag">PRO</span>
+            <span style={{fontSize: 6}} className="menu-tag">COMING SOON</span>
           </div>
           <div className="menu-item">
             <MenuOutlined /> <span style={{ marginLeft: 12 }}>My Projects</span>
-            <span className="menu-tag">PRO</span>
+            <span style={{fontSize: 6}} className="menu-tag">COMING SOON</span>
           </div>
           <div className="menu-item">
             <BarChartOutlined /> <span style={{ marginLeft: 12 }}>Statistics</span>
-            <span className="menu-tag">PRO</span>
+            <span style={{fontSize: 6}} className="menu-tag">COMING SOON</span>
           </div>
           <div className="menu-item" onClick={() => setDarkMode(!darkMode)}>
             <BulbOutlined /> <span style={{ marginLeft: 12 }}>{darkMode ? 'Light Mode' : 'Dark Mode'}</span>
           </div>
-          <div className="menu-item" onClick={() => setSettingsVisible(true)}>
+          {/* <div className="menu-item" onClick={() => setSettingsVisible(true)}>
             <SettingOutlined /> <span style={{ marginLeft: 12 }}>Settings</span>
-          </div>
-          <div className="menu-item">
+          </div> */}
+          {/* <div className="menu-item">
             <QuestionCircleOutlined /> <span style={{ marginLeft: 12 }}>Updates & FAQ</span>
-          </div>
+          </div> */}
         </div>
         
         <div style={{ flex: 1 }} />
@@ -297,9 +299,9 @@ const Chat: React.FC = () => {
           <div style={{ background: 'rgba(255,255,255,0.2)', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
             <RobotOutlined style={{ fontSize: 18 }} />
           </div>
-          <h3 style={{ margin: '0 0 8px 0', fontSize: 16 }}>Beta Phase</h3>
+          <h3 style={{ margin: '0 0 2px 0', fontSize: 16 }}>Beta V.0.1</h3>
           <p style={{ margin: 0, fontSize: 10, opacity: 0.6 }}>
-            Bitwise uganda 
+            Kalanzi Dixon 
           </p>
         </div>
         

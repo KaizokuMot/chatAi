@@ -69,7 +69,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ visible, onClose, onSuccess }) 
             </Button>
           </Form.Item>
           
-          <Form.Item style={{ marginBottom: 12 }}>
+          {/* <Form.Item style={{ marginBottom: 12 }}>
             <Button 
               type="default" 
               style={{ width: '100%' }} 
@@ -81,7 +81,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ visible, onClose, onSuccess }) 
             >
               Test as Dev User (Bypass Login)
             </Button>
-          </Form.Item>
+          </Form.Item> */}
 
           <div style={{ textAlign: 'center' }}>
             <Text type="secondary">
