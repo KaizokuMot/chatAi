@@ -76,7 +76,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ visible, onClose, onSuccess }) 
               {isSignUp ? 'Sign Up' : 'Log In'}
             </Button>
           </Form.Item>
-          
+{/*           
           <Form.Item style={{ marginBottom: 12 }}>
             <Button 
               type="default" 
@@ -89,7 +89,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ visible, onClose, onSuccess }) 
             >
               Test as Dev User (Bypass Login)
             </Button>
-          </Form.Item>
+          </Form.Item> */}
 
           <div style={{ textAlign: 'center' }}>
             <Text type="secondary">
