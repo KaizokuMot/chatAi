@@ -44,14 +44,14 @@ const Settings: React.FC<SettingsProps> = ({ visible, onClose, apiUrl, setApiUrl
           label="Ollama API URL"
           rules={[{ required: true, message: 'Please input the API URL!' }]}
         >
-          <Input placeholder="http://localhost:11434/api/chat" />
+          <Input placeholder="---" />
         </Form.Item>
         <Form.Item
           name="modelName"
           label="Ollama Model Name"
           rules={[{ required: true, message: 'Please input the model name!' }]}
         >
-          <Input placeholder="gemma3:1b" />
+          <Input placeholder="----" />
         </Form.Item>
       </Form>
     </Modal>

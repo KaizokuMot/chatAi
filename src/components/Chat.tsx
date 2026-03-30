@@ -4,7 +4,7 @@ import {
   SendOutlined, RobotOutlined, LogoutOutlined, LoginOutlined,
    SearchOutlined, BellOutlined, InfoCircleOutlined,
    DeleteOutlined,
-  AppstoreOutlined, MenuOutlined,  BarChartOutlined,
+  AppstoreOutlined, MenuOutlined, SettingOutlined, BarChartOutlined,
   MenuFoldOutlined, BulbOutlined
 } from '@ant-design/icons';
 import { auth, db } from '../firebase';
@@ -27,9 +27,7 @@ const Chat: React.FC = () => {
   const [loginModalVisible, setLoginModalVisible] = useState(false);
   
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [apiUrl, setApiUrl] = useState(() => localStorage.getItem('apiUrl') 
-  || import.meta.env.VITE_OLLAMA_ENDPOINT 
-  || 'local--link');
+  const [apiUrl, setApiUrl] = useState(() => localStorage.getItem('apiUrl') || import.meta.env.VITE_OLLAMA_ENDPOINT);
   
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
   
@@ -263,7 +261,7 @@ const Chat: React.FC = () => {
         <div style={{ background: '#ff8c42', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
                        <RobotOutlined style={{ color: '#fff', fontSize: 16 }} />
                      </div>
-          <h2 style={{ margin: 0, fontSize: 18 }}>ChatAi</h2>
+          {/* <h2 style={{ margin: 0, fontSize: 18 }}>ChatAi</h2> */}
         </div>
         
         <div className="menu-list" style={{ marginTop: 16 }}>
@@ -285,9 +283,9 @@ const Chat: React.FC = () => {
           <div className="menu-item" onClick={() => setDarkMode(!darkMode)}>
             <BulbOutlined /> <span style={{ marginLeft: 12 }}>{darkMode ? 'Light Mode' : 'Dark Mode'}</span>
           </div>
-          {/* <div className="menu-item" onClick={() => setSettingsVisible(true)}>
+          <div className="menu-item" onClick={() => setSettingsVisible(true)}>
             <SettingOutlined /> <span style={{ marginLeft: 12 }}>Settings</span>
-          </div> */}
+          </div>
           {/* <div className="menu-item">
             <QuestionCircleOutlined /> <span style={{ marginLeft: 12 }}>Updates & FAQ</span>
           </div> */}
@@ -321,7 +319,7 @@ const Chat: React.FC = () => {
         <div style={{ padding: '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-topbar)', borderBottom: '1px solid var(--border-color)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
              <Button icon={<MenuFoldOutlined />} onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="mobile-only-btn" style={{ display: 'none' }} />
-             <div style={{ fontWeight: 600, fontSize: 18 }}>AI Chat Helper</div>
+             <div style={{ fontWeight: 600, fontSize: 18 }}>ChatAi</div>
           </div>
           <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
             <Input className="top-bar-search" placeholder="Search" prefix={<SearchOutlined style={{ color: 'var(--text-secondary)' }} />} />
@@ -347,7 +345,7 @@ const Chat: React.FC = () => {
                      </div>
                      <strong style={{ fontSize: 16 }}>chatAI</strong>
                   </div>
-                  <div style={{ whiteSpace: 'pre-wrap', lineHeight: 1.6, color: 'var(--text-main)' }}>
+                  <div style={{fontSize:"small", whiteSpace: 'pre-wrap', lineHeight: 1.6, color: 'var(--text-main)' }}>
                     {item.text}
                   </div>
                 </div>
@@ -356,7 +354,7 @@ const Chat: React.FC = () => {
           ))}
           {loading && (
             <div className="message-bot" style={{ display: 'flex', alignItems: 'center' }}>
-              <Spin size="small" /> <span style={{ marginLeft: 12, color: 'var(--text-secondary)' }}>Thinking...</span>
+              <Spin size="small" /> <span style={{ fontSize:"small", marginLeft: 12, color: 'var(--text-secondary)' }}>Thinking...</span>
             </div>
           )}
           <div ref={messagesEndRef} />

@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Form, Input, Button, Typography, message, Modal } from 'antd';
-import { UserOutlined, LockOutlined, LoginOutlined } from '@ant-design/icons';
+import { UserOutlined, LockOutlined, RobotOutlined,LoginOutlined } from '@ant-design/icons';
 import { auth } from '../firebase';
+import "./loginModel.css"
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+
 
 const { Title, Text } = Typography;
 
@@ -44,9 +46,15 @@ const LoginModal: React.FC<LoginModalProps> = ({ visible, onClose, onSuccess }) 
       width={400}
       bodyStyle={{ padding: '24px 12px' }}
     >
-        <div style={{ textAlign: 'center', marginBottom: 24 }}>
-          <Title level={3}>chatAI</Title>
-          <Text type="secondary">{isSignUp ? 'Create a new account' : 'Sign in to continue chatting'}</Text>
+        <div style={{ textAlign: 'left', marginBottom: 24 }}>
+          <div className='login-title'>    
+                <div style={{ background: '#ff8c42', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+                       <RobotOutlined style={{ color: '#fff', fontSize: 16 }} />
+                     </div>
+                               <h1 className='app_name'>ChatAi</h1>
+
+                     </div>
+          <Text style={{textAlign:"left"}} type="secondary">{isSignUp ? 'Create a new account' : 'Sign in to continue chatting'}</Text>
         </div>
         
         <Form name="login_modal_form" onFinish={onFinish} layout="vertical" size="large">
@@ -69,7 +77,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ visible, onClose, onSuccess }) 
             </Button>
           </Form.Item>
           
-          {/* <Form.Item style={{ marginBottom: 12 }}>
+          <Form.Item style={{ marginBottom: 12 }}>
             <Button 
               type="default" 
               style={{ width: '100%' }} 
@@ -81,7 +89,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ visible, onClose, onSuccess }) 
             >
               Test as Dev User (Bypass Login)
             </Button>
-          </Form.Item> */}
+          </Form.Item>
 
           <div style={{ textAlign: 'center' }}>
             <Text type="secondary">
