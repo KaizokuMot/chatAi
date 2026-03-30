@@ -44,7 +44,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ visible, onClose, onSuccess }) 
       footer={null}
       centered
       width={400}
-      bodyStyle={{ padding: '24px 12px' }}
+      styles={{ body: { padding: '24px 12px' } }}
     >
         <div style={{ textAlign: 'left', marginBottom: 24 }}>
           <div className='login-title'>    

@@ -39,13 +39,13 @@ const Settings: React.FC<SettingsProps> = ({ visible, onClose, apiUrl, setApiUrl
         apiUrl: apiUrl,
         modelName: localStorage.getItem('modelName') || 'gemma3:1b'
       }}>
-        {/* <Form.Item
+        <Form.Item
           name="apiUrl"
           label="Ollama API URL"
           rules={[{ required: true, message: 'Please input the API URL!' }]}
         >
-          <Input placeholder="---" />
-        </Form.Item> */}
+          <Input placeholder="https://your-ngrok-url.ngrok-free.dev/api/chat" />
+        </Form.Item>
         <Form.Item
           name="modelName"
           label="Ollama Model Name"

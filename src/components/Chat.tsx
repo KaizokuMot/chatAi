@@ -27,8 +27,13 @@ const Chat: React.FC = () => {
   const [loginModalVisible, setLoginModalVisible] = useState(false);
   
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [apiUrl, setApiUrl] = useState(() => localStorage.getItem('apiUrl') || import.meta.env.VITE_OLLAMA_ENDPOINT || "https://necessitative-freeda-serologically.ngrok-free.dev/api/chat");
+  const [apiUrl, setApiUrl] = useState(() => {
+    const saved = localStorage.getItem('apiUrl');
+    if (saved && saved !== "undefined" && saved !== "null" && saved.trim() !== "") return saved;
+    return import.meta.env.VITE_OLLAMA_ENDPOINT || "https://necessitative-freeda-serologically.ngrok-free.dev/api/chat";
+  });
   
+  const [serverStatus, setServerStatus] = useState<'checking' | 'online' | 'offline' | 'error'>('online');
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
   
   useEffect(() => {
@@ -45,7 +50,47 @@ const Chat: React.FC = () => {
   const isDevMode = localStorage.getItem('devMode') === 'true';
   const hasGreeted = useRef(false);
 
+  const checkServerHealth = async () => {
+    setServerStatus('checking');
+    try {
+      // Base URL from /api/chat
+      const baseUrl = apiUrl.replace(/\/api\/chat$/, '');
+      const healthUrl = `${baseUrl}/api/health`;
+      
+      const response = await fetch(healthUrl, {
+        method: 'GET',
+        headers: {
+          'ngrok-skip-browser-warning': 'true' // Helpful for ngrok links
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Health Check Response:", data);
+        setServerStatus('online');
+        // If there's a message in the health check, show it
+        if (data.message) {
+          message.info(`Server Status: ${data.message}`);
+        }
+        return true;
+      } else {
+        // Fallback for 404 or other issues
+        setServerStatus('online'); 
+        return true;
+      }
+    } catch (e) {
+      console.error("Health check failed:", e);
+      setServerStatus('error');
+      return false;
+    }
+  };
+
+  useEffect(() => {
+    checkServerHealth();
+  }, [apiUrl]);
+
   const generateGreeting = async (displayName: string | null) => {
+    if (serverStatus !== 'online') return;
     setLoading(true);
     try {
       const modelName = localStorage.getItem('modelName') || 'gemma3:1b';
@@ -61,7 +106,7 @@ const Chat: React.FC = () => {
         body: JSON.stringify({
           model: modelName,
           messages: [
-            // { role: "system", content: "You are a helpful AI assistant. Generate a short, friendly greeting." },
+            { role: "system", content: "You are an entity from another time but here you're a helpful AI assistant built by kalanzi dixon" },
             { role: "user", content: promptText }
           ],
           stream: false
@@ -95,7 +140,7 @@ const Chat: React.FC = () => {
 
   useEffect(() => {
     if (isDevMode || !auth.currentUser) {
-      if (isDevMode && !hasGreeted.current) {
+      if (isDevMode && !hasGreeted.current && serverStatus === 'online') {
         hasGreeted.current = true;
         generateGreeting(null);
       }
@@ -115,7 +160,7 @@ const Chat: React.FC = () => {
         });
         setMessages(msgs);
         
-        if (msgs.length === 0 && !hasGreeted.current) {
+        if (msgs.length === 0 && !hasGreeted.current && serverStatus === 'online') {
           hasGreeted.current = true;
           generateGreeting(auth.currentUser?.displayName ?? null);
         }
@@ -125,7 +170,7 @@ const Chat: React.FC = () => {
 
       return () => unsubscribe();
     }
-  }, [auth.currentUser, isDevMode, apiUrl]);
+  }, [auth.currentUser, isDevMode, apiUrl, serverStatus]);
 
   useEffect(() => {
       scrollToBottom();
@@ -211,6 +256,8 @@ const Chat: React.FC = () => {
         throw new Error('Network response was not ok');
       }
 
+      setServerStatus('online');
+
       const data = await response.json();
       const botResponse = data.message?.content || "I didn't understand that.";
 
@@ -227,6 +274,7 @@ const Chat: React.FC = () => {
 
     } catch (error: any) {
       console.error(error);
+      setServerStatus('error');
       message.error("Failed to connect to Ollama Server. Check Settings.");
       
       if (isDevMode) {
@@ -269,17 +317,18 @@ const Chat: React.FC = () => {
             <MessageOutlined /> <span style={{ marginLeft: 12 }}>ChatAi</span>
           </div> */}
           <div className="menu-item">
-            <AppstoreOutlined /> <span style={{ marginLeft: 12 }}>Templates</span>
-            <span style={{fontSize: 6}} className="menu-tag">COMING SOON</span>
-          </div>
-          <div className="menu-item">
-            <MenuOutlined /> <span style={{ marginLeft: 12 }}>My Projects</span>
+            <AppstoreOutlined /> <span style={{ marginLeft: 12 }}>Generated</span>
             <span style={{fontSize: 6}} className="menu-tag">COMING SOON</span>
           </div>
           <div className="menu-item">
             <BarChartOutlined /> <span style={{ marginLeft: 12 }}>Statistics</span>
             <span style={{fontSize: 6}} className="menu-tag">COMING SOON</span>
           </div>
+          <div className="menu-item">
+            <MenuOutlined /> <span style={{ marginLeft: 12 }}>Agents</span>
+            <span style={{fontSize: 6}} className="menu-tag">COMING SOON</span>
+          </div>
+   
           <div className="menu-item" onClick={() => setDarkMode(!darkMode)}>
             <BulbOutlined /> <span style={{ marginLeft: 12 }}>{darkMode ? 'Light Mode' : 'Dark Mode'}</span>
           </div>
@@ -320,6 +369,12 @@ const Chat: React.FC = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
              <Button icon={<MenuFoldOutlined />} onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="mobile-only-btn" style={{ display: 'none' }} />
              <div style={{ fontWeight: 600, fontSize: 18 }}>ChatAi</div>
+             <div style={{ marginLeft: 8, display: 'flex', alignItems: 'center' }}>
+               {serverStatus === 'checking' && <Spin size="small" />}
+               {serverStatus === 'online' && <span style={{ fontSize: 10, color: '#52c41a', background: 'rgba(82, 196, 26, 0.1)', padding: '2px 6px', borderRadius: 4 }}>ONLINE</span>}
+               {serverStatus === 'offline' && <span style={{ fontSize: 10, color: '#f5222d', background: 'rgba(245, 34, 45, 0.1)', padding: '2px 6px', borderRadius: 4 }}>OFFLINE</span>}
+               {serverStatus === 'error' && <span style={{ fontSize: 10, color: '#faad14', background: 'rgba(250, 173, 20, 0.1)', padding: '2px 6px', borderRadius: 4 }}>CONN ERROR</span>}
+             </div>
           </div>
           <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
             <Input className="top-bar-search" placeholder="Search" prefix={<SearchOutlined style={{ color: 'var(--text-secondary)' }} />} />
