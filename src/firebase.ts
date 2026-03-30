@@ -4,14 +4,14 @@ import { getFirestore } from "firebase/firestore";
 
 // TODO: Replace with your Firebase config from the Firebase Console
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_API_KEY,
-  authDomain: import.meta.env.VITE_AUTH_DOMAIN,
-  databaseURL: import.meta.env.VITE_DATABASE_URL,
-  projectId: import.meta.env.VITE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_SENDER_ID,
-  appId:  import.meta.env.VITE_APP_ID,
-  measurementId: import.meta.env.VITE_MESUREMENT_ID
+  apiKey: "AIzaSyAZpLNyS9RN7BN6eAcD5AvHmgKBi-eYfmA",
+  authDomain: "moxiescreen.firebaseapp.com",
+  databaseURL: "https://moxiescreen-default-rtdb.firebaseio.com",
+  projectId: "moxiescreen",
+  storageBucket: "moxiescreen.appspot.com",
+  messagingSenderId: "346104076821",
+  appId: "1:346104076821:web:b9e28de331612ead48cc1c",
+  measurementId: "G-H0W642QTFT" 
 };
 
 
