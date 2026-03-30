@@ -260,16 +260,16 @@ const Chat: React.FC = () => {
       {/* Left Sidebar */}
       <div className={`left-sidebar ${mobileMenuOpen ? 'open' : ''}`}>
         <div style={{ padding: '24px', display: 'flex', alignItems: 'center' }}>
-          <div style={{ background: '#ff8c42', padding: 6, borderRadius: 8, marginRight: 12 }}>
-            <MessageOutlined style={{ color: '#fff' }} />
-          </div>
-          <h2 style={{ margin: 0, fontSize: 18 }}>chatAI</h2>
+        <div style={{ background: '#ff8c42', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+                       <RobotOutlined style={{ color: '#fff', fontSize: 16 }} />
+                     </div>
+          <h2 style={{ margin: 0, fontSize: 18 }}>ChatAi</h2>
         </div>
         
         <div className="menu-list" style={{ marginTop: 16 }}>
-          <div className="menu-item active">
+          {/* <div className="menu-item active">
             <MessageOutlined /> <span style={{ marginLeft: 12 }}>ChatAi</span>
-          </div>
+          </div> */}
           <div className="menu-item">
             <AppstoreOutlined /> <span style={{ marginLeft: 12 }}>Templates</span>
             <span style={{fontSize: 6}} className="menu-tag">COMING SOON</span>
@@ -364,8 +364,8 @@ const Chat: React.FC = () => {
 
         <div style={{ padding: '0 32px 24px 32px' }}>
           <div className="chat-input-container">
-            <PaperClipOutlined style={{ fontSize: 20, color: 'var(--text-secondary)', marginRight: 16, cursor: 'pointer' }} />
-            <AudioOutlined style={{ fontSize: 20, color: 'var(--text-secondary)', marginRight: 16, cursor: 'pointer' }} />
+            {/* <PaperClipOutlined style={{ fontSize: 20, color: 'var(--text-secondary)', marginRight: 16, cursor: 'pointer' }} />
+            <AudioOutlined style={{ fontSize: 20, color: 'var(--text-secondary)', marginRight: 16, cursor: 'pointer' }} /> */}
             <Input 
               className="chat-input"
               placeholder="Start typing..." 
