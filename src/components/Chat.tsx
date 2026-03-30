@@ -29,7 +29,7 @@ const Chat: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [apiUrl, setApiUrl] = useState(() => localStorage.getItem('apiUrl') 
   || import.meta.env.VITE_OLLAMA_ENDPOINT 
-  || 'https://necessitative-freeda-serologically.ngrok-free.dev/api/chat');
+  || 'local--link');
   
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
   
