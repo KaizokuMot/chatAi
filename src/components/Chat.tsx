@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Input, Button, Spin, Checkbox, message } from 'antd';
-import { 
+import {
   SendOutlined, RobotOutlined, LogoutOutlined, LoginOutlined,
-   SearchOutlined, BellOutlined, InfoCircleOutlined,
-   DeleteOutlined,
+  SearchOutlined, BellOutlined, InfoCircleOutlined,
+  DeleteOutlined,
   AppstoreOutlined, MenuOutlined, BarChartOutlined,
   MenuFoldOutlined, BulbOutlined
 } from '@ant-design/icons';
@@ -25,17 +25,17 @@ const Chat: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [settingsVisible, setSettingsVisible] = useState(false);
   const [loginModalVisible, setLoginModalVisible] = useState(false);
-  
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [apiUrl, setApiUrl] = useState(() => {
     const saved = localStorage.getItem('apiUrl');
     if (saved && saved !== "undefined" && saved !== "null" && saved.trim() !== "") return saved;
     return import.meta.env.VITE_OLLAMA_ENDPOINT || "https://necessitative-freeda-serologically.ngrok-free.dev/api/chat";
   });
-  
+
   const [serverStatus, setServerStatus] = useState<'checking' | 'online' | 'offline' | 'error'>('online');
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
-  
+
   useEffect(() => {
     if (darkMode) {
       document.body.classList.add('dark');
@@ -45,7 +45,7 @@ const Chat: React.FC = () => {
       localStorage.setItem('darkMode', 'false');
     }
   }, [darkMode]);
-  
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isDevMode = localStorage.getItem('devMode') === 'true';
   const hasGreeted = useRef(false);
@@ -56,14 +56,14 @@ const Chat: React.FC = () => {
       // Base URL from /api/chat
       const baseUrl = apiUrl.replace(/\/api\/chat$/, '');
       const healthUrl = `${baseUrl}/api/health`;
-      
+
       const response = await fetch(healthUrl, {
         method: 'GET',
         headers: {
           'ngrok-skip-browser-warning': 'true' // Helpful for ngrok links
         }
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         console.log("Health Check Response:", data);
@@ -75,7 +75,7 @@ const Chat: React.FC = () => {
         return true;
       } else {
         // Fallback for 404 or other issues
-        setServerStatus('online'); 
+        setServerStatus('online');
         return true;
       }
     } catch (e) {
@@ -94,10 +94,10 @@ const Chat: React.FC = () => {
     setLoading(true);
     try {
       const modelName = localStorage.getItem('modelName') || 'gemma3:1b';
-      const promptText = displayName 
-        ? `Greet the returning user ${displayName} warmly and offer help.` 
+      const promptText = displayName
+        ? `Greet the returning user ${displayName} warmly and offer help.`
         : `Greet the user warmly and offer help. Keep it extremely short.`;
-        
+
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
@@ -106,7 +106,7 @@ const Chat: React.FC = () => {
         body: JSON.stringify({
           model: modelName,
           messages: [
-            { role: "system", content: "You are an entity from another time but here you're a helpful AI assistant built by kalanzi dixon" },
+            // { role: "system", content: "You are an entity from another time but here you're a helpful AI assistant built by kalanzi dixon" },
             { role: "user", content: promptText }
           ],
           stream: false
@@ -116,16 +116,16 @@ const Chat: React.FC = () => {
       if (response.ok) {
         const data = await response.json();
         const botResponse = data.message?.content || "Hello! How can I help you today?";
-        
+
         if (isDevMode) {
-           setMessages([{ text: botResponse, sender: 'bot', timestamp: new Date() }]);
+          setMessages([{ text: botResponse, sender: 'bot', timestamp: new Date() }]);
         } else if (auth.currentUser) {
-           const msgRef = collection(db, `users/${auth.currentUser.uid}/messages`);
-           await addDoc(msgRef, {
-             text: botResponse,
-             sender: 'bot',
-             timestamp: serverTimestamp()
-           });
+          const msgRef = collection(db, `users/${auth.currentUser.uid}/messages`);
+          await addDoc(msgRef, {
+            text: botResponse,
+            sender: 'bot',
+            timestamp: serverTimestamp()
+          });
         }
       }
     } catch (e) {
@@ -159,7 +159,7 @@ const Chat: React.FC = () => {
           msgs.push({ id: doc.id, ...doc.data() } as MessageData);
         });
         setMessages(msgs);
-        
+
         if (msgs.length === 0 && !hasGreeted.current && serverStatus === 'online') {
           hasGreeted.current = true;
           generateGreeting(auth.currentUser?.displayName ?? null);
@@ -173,7 +173,7 @@ const Chat: React.FC = () => {
   }, [auth.currentUser, isDevMode, apiUrl, serverStatus]);
 
   useEffect(() => {
-      scrollToBottom();
+    scrollToBottom();
   }, [messages]);
 
   const clearHistory = async () => {
@@ -183,12 +183,12 @@ const Chat: React.FC = () => {
       return;
     }
     if (!auth.currentUser) return;
-    
+
     try {
       setLoading(true);
       const q = query(collection(db, `users/${auth.currentUser.uid}/messages`));
       const querySnapshot = await getDocs(q);
-      const deletePromises = querySnapshot.docs.map(document => 
+      const deletePromises = querySnapshot.docs.map(document =>
         deleteDoc(doc(db, `users/${auth.currentUser!.uid}/messages`, document.id))
       );
       await Promise.all(deletePromises);
@@ -208,7 +208,7 @@ const Chat: React.FC = () => {
 
   const attemptSendMessage = async () => {
     if (!inputValue.trim()) return;
-    
+
     // Auth Guard: Show Login modal if not authenticated
     if (!auth.currentUser && !isDevMode) {
       setLoginModalVisible(true);
@@ -231,12 +231,12 @@ const Chat: React.FC = () => {
         });
       }
 
-      const currentHistory = messages.map(m => ({ 
-        role: m.sender === 'user' ? 'user' : 'assistant', 
-        content: m.text 
+      const currentHistory = messages.map(m => ({
+        role: m.sender === 'user' ? 'user' : 'assistant',
+        content: m.text
       }));
       const modelName = localStorage.getItem('modelName') || 'gemma3:1b';
-      
+
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
@@ -276,9 +276,9 @@ const Chat: React.FC = () => {
       console.error(error);
       setServerStatus('error');
       message.error("Failed to connect to Ollama Server. Check Settings.");
-      
+
       if (isDevMode) {
-         setMessages(prev => [...prev, { text: "Error connecting to model. Ensure server is running.", sender: 'bot', timestamp: new Date() }]);
+        setMessages(prev => [...prev, { text: "Error connecting to model. Ensure server is running.", sender: 'bot', timestamp: new Date() }]);
       }
     } finally {
       setLoading(false);
@@ -298,37 +298,37 @@ const Chat: React.FC = () => {
   return (
     <div className="app-container">
       {/* Mobile Overlay */}
-      <div 
-        className={`mobile-overlay ${mobileMenuOpen ? 'open' : ''}`} 
+      <div
+        className={`mobile-overlay ${mobileMenuOpen ? 'open' : ''}`}
         onClick={() => setMobileMenuOpen(false)}
       />
 
       {/* Left Sidebar */}
       <div className={`left-sidebar ${mobileMenuOpen ? 'open' : ''}`}>
         <div style={{ padding: '24px', display: 'flex', alignItems: 'center' }}>
-        <div style={{ background: '#ff8c42', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
-                       <RobotOutlined style={{ color: '#fff', fontSize: 16 }} />
-                     </div>
+          <div style={{ background: '#ff8c42', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+            <RobotOutlined style={{ color: '#fff', fontSize: 16 }} />
+          </div>
           {/* <h2 style={{ margin: 0, fontSize: 18 }}>ChatAi</h2> */}
         </div>
-        
+
         <div className="menu-list" style={{ marginTop: 16 }}>
           {/* <div className="menu-item active">
             <MessageOutlined /> <span style={{ marginLeft: 12 }}>ChatAi</span>
           </div> */}
           <div className="menu-item">
             <AppstoreOutlined /> <span style={{ marginLeft: 12 }}>Generated</span>
-            <span style={{fontSize: 6}} className="menu-tag">COMING SOON</span>
+            <span style={{ fontSize: 6 }} className="menu-tag">COMING SOON</span>
           </div>
           <div className="menu-item">
             <BarChartOutlined /> <span style={{ marginLeft: 12 }}>Statistics</span>
-            <span style={{fontSize: 6}} className="menu-tag">COMING SOON</span>
+            <span style={{ fontSize: 6 }} className="menu-tag">COMING SOON</span>
           </div>
           <div className="menu-item">
             <MenuOutlined /> <span style={{ marginLeft: 12 }}>Agents</span>
-            <span style={{fontSize: 6}} className="menu-tag">COMING SOON</span>
+            <span style={{ fontSize: 6 }} className="menu-tag">COMING SOON</span>
           </div>
-   
+
           <div className="menu-item" onClick={() => setDarkMode(!darkMode)}>
             <BulbOutlined /> <span style={{ marginLeft: 12 }}>{darkMode ? 'Light Mode' : 'Dark Mode'}</span>
           </div>
@@ -339,19 +339,19 @@ const Chat: React.FC = () => {
             <QuestionCircleOutlined /> <span style={{ marginLeft: 12 }}>Updates & FAQ</span>
           </div> */}
         </div>
-        
+
         <div style={{ flex: 1 }} />
-        
+
         <div className="beta-card">
           <div style={{ background: 'rgba(255,255,255,0.2)', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
             <RobotOutlined style={{ fontSize: 18 }} />
           </div>
           <h3 style={{ margin: '0 0 2px 0', fontSize: 16 }}>Beta V.0.1</h3>
           <p style={{ margin: 0, fontSize: 10, opacity: 0.6 }}>
-            Kalanzi Dixon 
+            Kalanzi Dixon
           </p>
         </div>
-        
+
         {auth.currentUser || isDevMode ? (
           <div className="menu-item" onClick={logout} style={{ marginBottom: 16 }}>
             <LogoutOutlined /> <span style={{ marginLeft: 12 }}>{isDevMode ? 'Exit Dev Mode' : 'Log out'}</span>
@@ -367,14 +367,14 @@ const Chat: React.FC = () => {
       <div className="main-content">
         <div style={{ padding: '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-topbar)', borderBottom: '1px solid var(--border-color)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-             <Button icon={<MenuFoldOutlined />} onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="mobile-only-btn" style={{ display: 'none' }} />
-             <div style={{ fontWeight: 600, fontSize: 18 }}>ChatAi</div>
-             <div style={{ marginLeft: 8, display: 'flex', alignItems: 'center' }}>
-               {serverStatus === 'checking' && <Spin size="small" />}
-               {serverStatus === 'online' && <span style={{ fontSize: 10, color: '#52c41a', background: 'rgba(82, 196, 26, 0.1)', padding: '2px 6px', borderRadius: 4 }}>ONLINE</span>}
-               {serverStatus === 'offline' && <span style={{ fontSize: 10, color: '#f5222d', background: 'rgba(245, 34, 45, 0.1)', padding: '2px 6px', borderRadius: 4 }}>OFFLINE</span>}
-               {serverStatus === 'error' && <span style={{ fontSize: 10, color: '#faad14', background: 'rgba(250, 173, 20, 0.1)', padding: '2px 6px', borderRadius: 4 }}>CONN ERROR</span>}
-             </div>
+            <Button icon={<MenuFoldOutlined />} onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="mobile-only-btn" style={{ display: 'none' }} />
+            <div style={{ fontWeight: 600, fontSize: 18 }}>ChatAi</div>
+            <div style={{ marginLeft: 8, display: 'flex', alignItems: 'center' }}>
+              {serverStatus === 'checking' && <Spin size="small" />}
+              {serverStatus === 'online' && <span style={{ fontSize: 10, color: '#52c41a', background: 'rgba(82, 196, 26, 0.1)', padding: '2px 6px', borderRadius: 4 }}>ONLINE</span>}
+              {serverStatus === 'offline' && <span style={{ fontSize: 10, color: '#f5222d', background: 'rgba(245, 34, 45, 0.1)', padding: '2px 6px', borderRadius: 4 }}>OFFLINE</span>}
+              {serverStatus === 'error' && <span style={{ fontSize: 10, color: '#faad14', background: 'rgba(250, 173, 20, 0.1)', padding: '2px 6px', borderRadius: 4 }}>CONN ERROR</span>}
+            </div>
           </div>
           <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
             <Input className="top-bar-search" placeholder="Search" prefix={<SearchOutlined style={{ color: 'var(--text-secondary)' }} />} />
@@ -382,7 +382,7 @@ const Chat: React.FC = () => {
             <Button icon={<InfoCircleOutlined />} shape="circle" type="text" style={{ background: 'var(--bg-icon-btn)', color: 'var(--text-primary)' }} />
           </div>
         </div>
-        
+
         <div style={{ flex: 1, padding: '32px', overflowY: 'auto' }}>
           {messages.map((item, index) => (
             <div key={item.id || index}>
@@ -395,12 +395,12 @@ const Chat: React.FC = () => {
               ) : (
                 <div className="message-bot">
                   <div style={{ display: 'flex', marginBottom: 16 }}>
-                     <div style={{ background: '#ff8c42', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
-                       <RobotOutlined style={{ color: '#fff', fontSize: 16 }} />
-                     </div>
-                     <strong style={{ fontSize: 16 }}>chatAI</strong>
+                    <div style={{ background: '#ff8c42', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+                      <RobotOutlined style={{ color: '#fff', fontSize: 16 }} />
+                    </div>
+                    <strong style={{ fontSize: 16 }}>chatAI</strong>
                   </div>
-                  <div style={{fontSize:"small", whiteSpace: 'pre-wrap', lineHeight: 1.6, color: 'var(--text-main)' }}>
+                  <div style={{ fontSize: "small", whiteSpace: 'pre-wrap', lineHeight: 1.6, color: 'var(--text-main)' }}>
                     {item.text}
                   </div>
                 </div>
@@ -409,7 +409,7 @@ const Chat: React.FC = () => {
           ))}
           {loading && (
             <div className="message-bot" style={{ display: 'flex', alignItems: 'center' }}>
-              <Spin size="small" /> <span style={{ fontSize:"small", marginLeft: 12, color: 'var(--text-secondary)' }}>Thinking...</span>
+              <Spin size="small" /> <span style={{ fontSize: "small", marginLeft: 12, color: 'var(--text-secondary)' }}>Thinking...</span>
             </div>
           )}
           <div ref={messagesEndRef} />
@@ -419,18 +419,18 @@ const Chat: React.FC = () => {
           <div className="chat-input-container">
             {/* <PaperClipOutlined style={{ fontSize: 20, color: 'var(--text-secondary)', marginRight: 16, cursor: 'pointer' }} />
             <AudioOutlined style={{ fontSize: 20, color: 'var(--text-secondary)', marginRight: 16, cursor: 'pointer' }} /> */}
-            <Input 
+            <Input
               className="chat-input"
-              placeholder="Start typing..." 
+              placeholder="Start typing..."
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onPressEnter={attemptSendMessage}
             />
-            <Button 
-              type="primary" 
-              shape="circle" 
-              icon={<SendOutlined />} 
-              size="large" 
+            <Button
+              type="primary"
+              shape="circle"
+              icon={<SendOutlined />}
+              size="large"
               onClick={attemptSendMessage}
               loading={loading}
               style={{ background: '#ff8c42', border: 'none', marginLeft: 8 }}
@@ -471,20 +471,20 @@ const Chat: React.FC = () => {
         </div>
       </div>
 
-      <LoginModal 
-        visible={loginModalVisible} 
-        onClose={() => setLoginModalVisible(false)} 
+      <LoginModal
+        visible={loginModalVisible}
+        onClose={() => setLoginModalVisible(false)}
         onSuccess={() => {
           setLoginModalVisible(false);
           attemptSendMessage();
-        }} 
+        }}
       />
-      
-      <Settings 
-        visible={settingsVisible} 
-        onClose={() => setSettingsVisible(false)} 
-        apiUrl={apiUrl} 
-        setApiUrl={setApiUrl} 
+
+      <Settings
+        visible={settingsVisible}
+        onClose={() => setSettingsVisible(false)}
+        apiUrl={apiUrl}
+        setApiUrl={setApiUrl}
       />
     </div>
   );
