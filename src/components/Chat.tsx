@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Input, Button, Spin, Checkbox, message } from 'antd';
 import {
   SendOutlined, RobotOutlined, LogoutOutlined, LoginOutlined,
-  SearchOutlined, BellOutlined, InfoCircleOutlined,
+  
   DeleteOutlined,
   AppstoreOutlined, MenuOutlined, BarChartOutlined,
   MenuFoldOutlined, BulbOutlined
@@ -446,7 +446,7 @@ const Chat: React.FC = () => {
 
       {/* Right Sidebar */}
       <div className="right-sidebar">
-        <div style={{ padding: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)' }}>
+        <div style={{ padding: '21px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)' }}>
           <span style={{ fontWeight: 600, fontSize: 16 }}>History</span>
           <span style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{messages.length}/50</span>
         </div>
