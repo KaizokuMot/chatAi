@@ -140,13 +140,13 @@ body.dark ::-webkit-scrollbar-thumb {
 }
 
 .menu-tag {
-  background-color: rgba(255, 140, 66, 0.2);
-  color: #ff8c42;
-  font-size: 10px;
-  padding: 2px 6px;
-  border-radius: 4px;
-  margin-left: auto;
-  font-weight: bold;
+    color: white;
+    background-color: #ff8c4233;
+    border-radius: 4px;
+    margin-left: auto;
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: 700;
 }
 
 .message-bot {

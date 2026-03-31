@@ -30,7 +30,7 @@ const Chat: React.FC = () => {
   const [apiUrl, setApiUrl] = useState(() => {
     const saved = localStorage.getItem('apiUrl');
     if (saved && saved !== "undefined" && saved !== "null" && saved.trim() !== "") return saved;
-    return import.meta.env.VITE_OLLAMA_ENDPOINT || "https://necessitative-freeda-serologically.ngrok-free.dev/api/chat";
+    return import.meta.env.VITE_OLLAMA_ENDPOINT;
   });
 
   const [serverStatus, setServerStatus] = useState<'checking' | 'online' | 'offline' | 'error'>('online');
@@ -394,8 +394,8 @@ const Chat: React.FC = () => {
                 </div>
               ) : (
                 <div className="message-bot">
-                  <div style={{ display: 'flex', marginBottom: 16 }}>
-                    <div style={{ background: '#ff8c42', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+                  <div style={{ display: 'flex', marginBottom: 16, alignItems:'anchor-center' }}>
+                    <div style={{ background: '#181a1b', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
                       <RobotOutlined style={{ color: '#fff', fontSize: 16 }} />
                     </div>
                     <strong style={{ fontSize: 16 }}>chatAI</strong>
@@ -433,7 +433,7 @@ const Chat: React.FC = () => {
               size="large"
               onClick={attemptSendMessage}
               loading={loading}
-              style={{ background: '#ff8c42', border: 'none', marginLeft: 8 }}
+              style={{ background: '#181a1b', border: 'none', marginLeft: 8 }}
             />
           </div>
           <div style={{ textAlign: 'center', fontSize: 12, color: 'var(--text-secondary)', marginTop: 8 }}>
