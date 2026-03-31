@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Form, Input, Button, Card, Typography, message, Select } from 'antd';
-import { UserOutlined, LockOutlined, LoginOutlined, PhoneOutlined, GlobalOutlined } from '@ant-design/icons';
+import { UserOutlined, LockOutlined, LoginOutlined, PhoneOutlined } from '@ant-design/icons';
 import { auth, db } from '../firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
