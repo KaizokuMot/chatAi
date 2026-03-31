@@ -383,11 +383,6 @@ const Chat: React.FC = () => {
               {serverStatus === 'error' && <span style={{ fontSize: 10, color: '#faad14', background: 'rgba(250, 173, 20, 0.1)', padding: '2px 6px', borderRadius: 4 }}>CONN ERROR</span>}
             </div>
           </div>
-          <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-            <Input className="top-bar-search" placeholder="Search" prefix={<SearchOutlined style={{ color: 'var(--text-secondary)' }} />} />
-            <Button icon={<BellOutlined />} shape="circle" type="text" style={{ background: 'var(--bg-icon-btn)', color: 'var(--text-primary)' }} />
-            <Button icon={<InfoCircleOutlined />} shape="circle" type="text" style={{ background: 'var(--bg-icon-btn)', color: 'var(--text-primary)' }} />
-          </div>
         </div>
 
         <div style={{ flex: 1, padding: '32px', overflowY: 'auto' }}>
