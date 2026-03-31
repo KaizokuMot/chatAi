@@ -1,11 +1,26 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, Card, Typography, message } from 'antd';
-import { UserOutlined, LockOutlined, LoginOutlined } from '@ant-design/icons';
-import { auth } from '../firebase';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { Form, Input, Button, Card, Typography, message, Select } from 'antd';
+import { UserOutlined, LockOutlined, LoginOutlined, PhoneOutlined, GlobalOutlined } from '@ant-design/icons';
+import { auth, db } from '../firebase';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 
 const { Title, Text } = Typography;
+const { Option } = Select;
+
+const countries = [
+  { label: 'United States', value: 'US' },
+  { label: 'United Kingdom', value: 'GB' },
+  { label: 'Canada', value: 'CA' },
+  { label: 'Australia', value: 'AU' },
+  { label: 'India', value: 'IN' },
+  { label: 'Germany', value: 'DE' },
+  { label: 'France', value: 'FR' },
+  { label: 'Japan', value: 'JP' },
+  { label: 'China', value: 'CN' },
+  { label: 'Brazil', value: 'BR' },
+];
 
 const Login: React.FC = () => {
   const [loading, setLoading] = useState(false);
@@ -16,7 +31,24 @@ const Login: React.FC = () => {
     setLoading(true);
     try {
       if (isSignUp) {
-        await createUserWithEmailAndPassword(auth, values.email, values.password);
+        const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
+        const user = userCredential.user;
+
+        // Update Firebase Auth profile
+        await updateProfile(user, {
+          displayName: values.fullName
+        });
+
+        // Save to Firestore
+        await setDoc(doc(db, 'users', user.uid), {
+          uid: user.uid,
+          fullName: values.fullName,
+          email: values.email,
+          phoneNumber: values.phoneNumber || null,
+          country: values.country || null,
+          createdAt: new Date().toISOString()
+        });
+
         message.success('Account created successfully!');
       } else {
         await signInWithEmailAndPassword(auth, values.email, values.password);
@@ -39,12 +71,47 @@ const Login: React.FC = () => {
         </div>
         
         <Form name="login_form" onFinish={onFinish} layout="vertical" size="large">
+          {isSignUp && (
+            <Form.Item
+              name="fullName"
+              rules={[{ required: true, message: 'Please input your full name!' }]}
+            >
+              <Input prefix={<UserOutlined />} placeholder="Full Name" />
+            </Form.Item>
+          )}
+
           <Form.Item
             name="email"
             rules={[{ required: true, message: 'Please input your email!' }, { type: 'email', message: 'Invalid email' }]}
           >
             <Input prefix={<UserOutlined />} placeholder="Email" />
           </Form.Item>
+
+          {isSignUp && (
+            <>
+              <Form.Item
+                name="phoneNumber"
+              >
+                <Input prefix={<PhoneOutlined />} placeholder="Phone Number (Optional)" />
+              </Form.Item>
+
+              <Form.Item
+                name="country"
+              >
+                <Select
+                  placeholder="Select Country (Optional)"
+                  allowClear
+                  showSearch
+                  optionFilterProp="children"
+                >
+                  {countries.map(country => (
+                    <Option key={country.value} value={country.value}>{country.label}</Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </>
+          )}
+
           <Form.Item
             name="password"
             rules={[{ required: true, message: 'Please input your password!' }, { min: 6, message: 'Password must be at least 6 characters' }]}

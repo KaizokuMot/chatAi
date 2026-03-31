@@ -25,6 +25,7 @@ const Chat: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [settingsVisible, setSettingsVisible] = useState(false);
   const [loginModalVisible, setLoginModalVisible] = useState(false);
+  const [guestMessageCount, setGuestMessageCount] = useState(0);
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [apiUrl, setApiUrl] = useState(() => {
@@ -209,10 +210,13 @@ const Chat: React.FC = () => {
   const attemptSendMessage = async () => {
     if (!inputValue.trim()) return;
 
-    // Auth Guard: Show Login modal if not authenticated
+    // Auth Guard: Show Login modal if not authenticated and message limit reached
     if (!auth.currentUser && !isDevMode) {
-      setLoginModalVisible(true);
-      return;
+      if (guestMessageCount >= 2) {
+        setLoginModalVisible(true);
+        message.info("Please log in to continue chatting!");
+        return;
+      }
     }
 
     const userMsg = inputValue.trim();
@@ -220,8 +224,11 @@ const Chat: React.FC = () => {
     setLoading(true);
 
     try {
-      if (isDevMode) {
+      if (isDevMode || (!auth.currentUser && guestMessageCount < 2)) {
         setMessages(prev => [...prev, { text: userMsg, sender: 'user', timestamp: new Date() }]);
+        if (!auth.currentUser && !isDevMode) {
+          setGuestMessageCount(prev => prev + 1);
+        }
       } else if (auth.currentUser) {
         const msgRef = collection(db, `users/${auth.currentUser.uid}/messages`);
         await addDoc(msgRef, {
@@ -261,7 +268,7 @@ const Chat: React.FC = () => {
       const data = await response.json();
       const botResponse = data.message?.content || "I didn't understand that.";
 
-      if (isDevMode) {
+      if (isDevMode || (!auth.currentUser && guestMessageCount < 3)) { // Allow bot reply for guest
         setMessages(prev => [...prev, { text: botResponse, sender: 'bot', timestamp: new Date() }]);
       } else if (auth.currentUser) {
         const msgRef = collection(db, `users/${auth.currentUser.uid}/messages`);
@@ -346,7 +353,7 @@ const Chat: React.FC = () => {
           <div style={{ background: 'rgba(255,255,255,0.2)', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
             <RobotOutlined style={{ fontSize: 18 }} />
           </div>
-          <h3 style={{ margin: '0 0 2px 0', fontSize: 16 }}>Beta V.0.1</h3>
+          <h3 style={{ margin: '0 0 2px 0', fontSize: 16 }}>Beta V.0.2</h3>
           <p style={{ margin: 0, fontSize: 10, opacity: 0.6 }}>
             Kalanzi Dixon
           </p>

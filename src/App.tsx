@@ -11,11 +11,26 @@ const App: React.FC = () => {
   const isDevMode = localStorage.getItem('devMode') === 'true';
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, () => {
+    console.log("App: Initializing auth listener...");
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      console.log("App: Auth state changed. User:", user ? user.uid : "None");
       setLoading(false);
     });
-    if (isDevMode) setLoading(false);
-    return () => unsubscribe();
+
+    // Fallback: If auth takes too long, stop loading
+    const timer = setTimeout(() => {
+      console.warn("App: Auth initialization timed out after 5s.");
+      setLoading(false);
+    }, 5000);
+
+    if (isDevMode) {
+      console.log("App: Dev mode detected, bypassing loading.");
+      setLoading(false);
+    }
+    return () => {
+      unsubscribe();
+      clearTimeout(timer);
+    };
   }, [isDevMode]);
 
   if (loading) {
