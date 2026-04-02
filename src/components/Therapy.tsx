@@ -1,21 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Button, Input, message, Spin } from 'antd';
-import { MenuFoldOutlined, SendOutlined, CloseOutlined } from '@ant-design/icons';
+import { Button, message, Spin } from 'antd';
+import { MenuFoldOutlined, CloseOutlined } from '@ant-design/icons';
 import { Client } from "@gradio/client";
 import Sidebar from './Sidebar';
 import Orb from './Orb';
 import './Therapy.css';
 
-const DIXON_SYSTEM_PROMPT = `You are Dixon, an empathetic and professional therapist AI. You were named after your developer. Your goal is to provide a safe space for users to talk about their feelings. ALWAYS start by greeting the user warmly and asking for their name if you don't know it. Once you know their name, refer to them by it frequently. Emphasize that this is a private session and NO user data is ever kept or stored. Be kind, supportive, and use therapeutic techniques like active listening and open-ended questions. Keep your responses relatively concise but deeply empathetic.`;
+const DIXON_SYSTEM_PROMPT = `You are Dixon, an empathetic and professional therapist AI. You were named after your developer. Your goal is to provide a safe space for users to talk about their feelings. ALWAYS start by greeting the user warmly and asking for their name if you don't know it. Once you know their name, refer to them by it frequently. Emphasize that this is a private session and NO user data is ever kept or stored. Be kind, supportive, and use therapeutic techniques like active listening and open-ended questions. Keep your responses relatively concise but deeply empathetic. Since this is a voice-only session, be prepared for short or informal user speech.`;
 
 const Therapy: React.FC = () => {
   const [userName, setUserName] = useState<string | null>(localStorage.getItem('therapy_user_name'));
   const [messages, setMessages] = useState<{ role: string, content: string }[]>([]);
-  const [inputValue, setInputValue] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
   const [isSidebarHidden, setIsSidebarHidden] = useState(true);
   const [serverStatus, setServerStatus] = useState<'checking' | 'online' | 'error'>('checking');
   const [gradioStatus, setGradioStatus] = useState<'checking' | 'online' | 'error'>('checking');
@@ -23,6 +22,7 @@ const Therapy: React.FC = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const gradioClientRef = useRef<any>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const recognitionRef = useRef<any>(null);
 
   const apiUrl = localStorage.getItem('apiUrl') || import.meta.env.VITE_OLLAMA_ENDPOINT;
   const isDevMode = localStorage.getItem('devMode') === 'true';
@@ -53,6 +53,10 @@ const Therapy: React.FC = () => {
 
   useEffect(() => {
     checkSystemHealth();
+    initSpeechRecognition();
+    return () => {
+      if (recognitionRef.current) recognitionRef.current.stop();
+    };
   }, []);
 
   useEffect(() => {
@@ -64,6 +68,39 @@ const Therapy: React.FC = () => {
     }
   }, [serverStatus, gradioStatus]);
 
+  const initSpeechRecognition = () => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = false;
+      recognitionRef.current.interimResults = false;
+      recognitionRef.current.lang = 'en-US';
+
+      recognitionRef.current.onstart = () => setIsListening(true);
+      recognitionRef.current.onend = () => setIsListening(false);
+      recognitionRef.current.onerror = (event: any) => {
+        console.error("Speech Recognition Error:", event.error);
+        setIsListening(false);
+      };
+      recognitionRef.current.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        if (transcript) handleReceiveVoice(transcript);
+      };
+    } else {
+      message.warning("Your browser does not support Speech Recognition. Try using Chrome.");
+    }
+  };
+
+  const startListening = () => {
+    if (recognitionRef.current && !isListening && !isPlaying && !isGenerating) {
+      try {
+        recognitionRef.current.start();
+      } catch (e) {
+        console.error("Speech Recognition start error:", e);
+      }
+    }
+  };
+
   const greetUser = async () => {
     const greeting = "Hello! I am Dixon, your therapist. It's a pleasure to meet you. To get started, may I ask your name?";
     setMessages([{ role: 'assistant', content: greeting }]);
@@ -73,6 +110,7 @@ const Therapy: React.FC = () => {
   const playSpeech = async (text: string) => {
     if (!gradioClientRef.current) return;
     setIsPlaying(true);
+    setIsListening(false);
     try {
       const response = await fetch("https://github.com/kaizoku010/TTS/training.wav");
       const refAudio = await response.blob();
@@ -99,12 +137,10 @@ const Therapy: React.FC = () => {
     }
   };
 
-  const handleSend = async () => {
-    if (!inputValue.trim() || isGenerating) return;
-
-    const userMsg = inputValue.trim();
-    setInputValue('');
-
+  const handleReceiveVoice = async (transcript: string) => {
+    if (isGenerating || !transcript) return;
+    
+    const userMsg = transcript.trim();
     const newMessages = [...messages, { role: 'user', content: userMsg }];
     setMessages(newMessages);
     setIsGenerating(true);
@@ -154,7 +190,9 @@ const Therapy: React.FC = () => {
     }
     setIsPlaying(false);
     setIsGenerating(false);
+    setIsListening(false);
     if (abortControllerRef.current) abortControllerRef.current.abort();
+    if (recognitionRef.current) recognitionRef.current.stop();
 
     setMessages([]);
     setUserName(null);
@@ -168,6 +206,12 @@ const Therapy: React.FC = () => {
     
     message.info("Session reset. No data kept.");
     greetUser();
+  };
+
+  const handleAudioEnd = () => {
+    setIsPlaying(false);
+    // Automatically start listening after Dixon speaks
+    setTimeout(() => startListening(), 500);
   };
 
   const lastDixonMsg = messages.filter(m => m.role === 'assistant').slice(-1)[0];
@@ -219,29 +263,18 @@ const Therapy: React.FC = () => {
             </div>
           ) : (
             <Orb 
-              isPlaying={isPlaying} 
+              isPlaying={isPlaying || isListening} 
               isGenerating={isGenerating}
-              onClick={stopAndClear}
+              // onClick={stopAndClear} // Click-to-stop disabled as requested
+              onClick={() => {}} 
             />
           )}
         </div>
 
-        {/* Minimal Bottom Interaction Overlay */}
-        <div className="hero-input-overlay">
-          <div className="minimal-input-container">
-            <input
-              placeholder={!userName ? "Enter your name..." : "Talk to Dixon..."}
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onPressEnter={handleSend}
-              disabled={isGenerating}
-            />
-            <Button 
-              className="send-btn-minimal"
-              icon={<SendOutlined />}
-              onClick={handleSend}
-              loading={isGenerating}
-            />
+        {/* Status Indicator instead of Input Overlay */}
+        <div className="hero-input-overlay" style={{ border: 'none', background: 'transparent' }}>
+          <div className={`orb-label ${isListening ? 'listening-active' : ''}`} style={{ fontSize: 18, color: isListening ? '#00ffcc' : 'rgba(255,255,255,0.4)' }}>
+            {isListening ? 'Dixon is listening...' : isPlaying ? 'Dixon is speaking...' : isGenerating ? 'Dixon is thinking...' : 'Wait for Dixon...'}
           </div>
         </div>
 
@@ -257,7 +290,7 @@ const Therapy: React.FC = () => {
 
       <audio 
         ref={audioRef} 
-        onEnded={() => setIsPlaying(false)}
+        onEnded={handleAudioEnd}
         style={{ display: 'none' }}
       />
     </div>
