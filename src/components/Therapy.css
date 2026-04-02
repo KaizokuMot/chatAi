@@ -34,7 +34,40 @@
 }
 
 .sidebar-toggle-btn:hover {
+  color: #ff8c42;
+}
+
+.user-transcript-area {
+  top: auto;
+  bottom: 25vh;
+}
+
+.user-msg-bubble {
+  padding: 12px 24px;
+  background: rgba(0, 210, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  border: 1px solid rgba(0, 210, 255, 0.3);
   color: #00d2ff;
+  font-style: italic;
+  font-size: 16px;
+  animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.therapy-input-area {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 6px 16px;
+  border-radius: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .system-status-group {

@@ -11,9 +11,11 @@ const DIXON_SYSTEM_PROMPT = `You are Dixon, an empathetic and professional thera
 const Therapy: React.FC = () => {
   const [userName, setUserName] = useState<string | null>(localStorage.getItem('therapy_user_name'));
   const [messages, setMessages] = useState<{ role: string, content: string }[]>([]);
+  const [lastUserTranscript, setLastUserTranscript] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [micStatus, setMicStatus] = useState<'prompt' | 'granted' | 'denied'>('prompt');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isSidebarHidden, setIsSidebarHidden] = useState(true);
   const [serverStatus, setServerStatus] = useState<'checking' | 'online' | 'error'>('checking');
@@ -28,6 +30,20 @@ const Therapy: React.FC = () => {
   const isDevMode = localStorage.getItem('devMode') === 'true';
 
   const checkSystemHealth = async () => {
+    // Check Microphone permissions
+    if (navigator.permissions && navigator.permissions.query) {
+      try {
+        const result = await navigator.permissions.query({ name: 'microphone' as PermissionName });
+        setMicStatus(result.state);
+        result.onchange = () => setMicStatus(result.state);
+      } catch (e) {
+        // Fallback for browsers that don't support mic query
+        navigator.mediaDevices.getUserMedia({ audio: true })
+          .then(() => setMicStatus('granted'))
+          .catch(() => setMicStatus('denied'));
+      }
+    }
+
     try {
       const baseUrl = apiUrl.replace(/\/api\/chat$/, '');
       const healthUrl = `${baseUrl}/api/health`;
@@ -112,15 +128,21 @@ const Therapy: React.FC = () => {
     setIsPlaying(true);
     setIsListening(false);
     try {
-      const response = await fetch("https://github.com/kaizoku010/TTS/training.wav");
+      // Use local training audio as reference
+      const response = await fetch('/src/assets/voice/training_uU5TjliM.wav');
       const refAudio = await response.blob();
       const result: any = await gradioClientRef.current.predict("/generate_speech", {
         text: text,
         reference_audio: refAudio,
-        max_new_tokens: 500,
-        speed: 1,
-        text_temp: 0.7,
-        audio_temp: 0.7,
+        max_new_tokens: 50,
+        speed: 0.5,
+        text_temp: 0.1,
+        text_top_p: 0.1,
+        text_top_k: 1,
+        audio_temp: 0.1,
+        audio_top_p: 0.1,
+        audio_top_k: 1,
+        audio_repetition_penalty: 1,
         n_vq: 8,
       });
 
@@ -141,6 +163,10 @@ const Therapy: React.FC = () => {
     if (isGenerating || !transcript) return;
     
     const userMsg = transcript.trim();
+    setLastUserTranscript(userMsg);
+    // Hide transcript after 3 seconds
+    setTimeout(() => setLastUserTranscript(null), 3000);
+
     const newMessages = [...messages, { role: 'user', content: userMsg }];
     setMessages(newMessages);
     setIsGenerating(true);
@@ -241,15 +267,27 @@ const Therapy: React.FC = () => {
           <div className="system-status-group">
             <div className={`status-badge ${serverStatus}`}>BRAIN</div>
             <div className={`status-badge ${gradioStatus}`}>VOICE</div>
+            <div className={`status-badge ${micStatus === 'granted' ? 'online' : micStatus === 'denied' ? 'error' : 'checking'}`}>
+              MIC: {micStatus.toUpperCase()}
+            </div>
           </div>
           <div className="privacy-badge">🔒 Private Session</div>
         </div>
 
-        {/* Floating Message Overlay */}
-        {lastDixonMsg && (
+        {/* Floating Message Overlay - Hidden for the first greeting */}
+        {lastDixonMsg && messages.length > 1 && (
           <div className="floating-msg-area">
             <div className="dixon-msg">
               {lastDixonMsg.content}
+            </div>
+          </div>
+        )}
+
+        {/* User Transcript Overlay */}
+        {lastUserTranscript && (
+          <div className="floating-msg-area user-transcript-area">
+            <div className="user-msg-bubble">
+              "{lastUserTranscript}"
             </div>
           </div>
         )}
@@ -263,8 +301,9 @@ const Therapy: React.FC = () => {
             </div>
           ) : (
             <Orb 
-              isPlaying={isPlaying || isListening} 
+              isPlaying={isPlaying} 
               isGenerating={isGenerating}
+              isListening={isListening}
               // onClick={stopAndClear} // Click-to-stop disabled as requested
               onClick={() => {}} 
             />
