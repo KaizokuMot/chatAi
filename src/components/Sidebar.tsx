@@ -132,7 +132,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     >
                         <RobotOutlined style={{ fontSize: 18 }} />
                     </div>
-                    <h3 style={{ margin: '0 0 2px 0', fontSize: 16 }}>Beta v.0.4</h3>
+                    <h3 style={{ margin: '0 0 2px 0', fontSize: 16 }}>Beta v.0.5</h3>
                     <p style={{ margin: 0, fontSize: 10, opacity: 0.6 }}>
                         Kalanzi Dixon & Katungi Emma
                     </p>

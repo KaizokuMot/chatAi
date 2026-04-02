@@ -262,9 +262,32 @@
 }
 
 @media (max-width: 768px) {
-  .therapy-controls { top: 20px; left: 20px; right: 20px; }
-  .floating-msg-area { top: 18vh; padding: 0 20px; }
-  .dixon-msg { font-size: 16px; padding: 20px; }
-  .hero-input-overlay { bottom: 8vh; }
+  .therapy-controls { 
+    top: 20px; 
+    left: 15px; 
+    right: 15px; 
+    flex-wrap: wrap; 
+    gap: 12px;
+  }
+  .system-status-group {
+    gap: 8px;
+    padding: 4px 8px;
+    margin: 0 auto;
+    order: 3;
+    width: 100%;
+    justify-content: center;
+  }
+  .status-badge {
+    font-size: 8px;
+    padding: 3px 6px;
+  }
+  .privacy-badge { 
+    display: none; /* Hide on mobile to save space */
+  }
+  .floating-msg-area { top: 110px; padding: 0 15px; }
+  .dixon-msg { font-size: 15px; padding: 15px; }
+  .user-msg-bubble { font-size: 14px; padding: 10px 16px; }
+  .hero-input-overlay { bottom: 10vh; }
+  .orb-label { font-size: 14px !important; }
   .clear-session-btn { bottom: 20px; right: 20px; }
 }
