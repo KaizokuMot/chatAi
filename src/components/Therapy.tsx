@@ -60,7 +60,7 @@ const Therapy: React.FC = () => {
 
     try {
       if (!gradioClientRef.current) {
-        gradioClientRef.current = await Client.connect("https://46690b535c6d0162f5.gradio.live/");
+        gradioClientRef.current = await Client.connect("https://92120d8a65b4d70915.gradio.live/");
       }
       setGradioStatus('online');
     } catch (e) {
@@ -114,7 +114,7 @@ const Therapy: React.FC = () => {
             interim += event.results[i][0].transcript;
           }
         }
-        
+
         if (interim) {
           setInterimTranscript(interim);
         }
@@ -327,14 +327,14 @@ const Therapy: React.FC = () => {
           {serverStatus === 'checking' || gradioStatus === 'checking' ? (
             <div className="warming-up">
               <Spin size="large" />
-              <div>Connecting to Dixon...</div>
+              <div>oops...</div>
             </div>
           ) : (
             <Orb
               isPlaying={isPlaying}
               isGenerating={isGenerating}
               isListening={isListening}
-              onClick={toggleListening} 
+              onClick={toggleListening}
             />
           )}
         </div>
@@ -342,15 +342,15 @@ const Therapy: React.FC = () => {
         {/* Status Indicator instead of Input Overlay */}
         <div className="hero-input-overlay" style={{ border: 'none', background: 'transparent' }}>
           <div className={`orb-label ${isListening ? 'listening-active' : ''}`} style={{ fontSize: 18, color: isListening ? '#00ffcc' : 'rgba(255,255,255,0.4)', textAlign: 'center' }}>
-            {interimTranscript 
-              ? interimTranscript 
-              : isListening 
-                ? 'Dixon is listening...' 
-                : isPlaying 
-                  ? 'Dixon is speaking...' 
-                  : isGenerating 
-                    ? 'Dixon is thinking...' 
-                    : 'Click the Orb to speak'}
+            {interimTranscript
+              ? interimTranscript
+              : isListening
+                ? 'Dixon is listening...'
+                : isPlaying
+                  ? 'Dixon is speaking...'
+                  : isGenerating
+                    ? 'Dixon is thinking...'
+                    : 'service under construction'}
           </div>
         </div>
 
