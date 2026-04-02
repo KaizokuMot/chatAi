@@ -84,8 +84,19 @@ body.dark ::-webkit-scrollbar-thumb {
   color: #fff;
   display: flex;
   flex-direction: column;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   flex-shrink: 0;
+  z-index: 1001;
+}
+
+.left-sidebar.hidden-by-default {
+  margin-left: -260px;
+  opacity: 0;
+}
+
+.left-sidebar.hidden-by-default.open {
+  margin-left: 0;
+  opacity: 1;
 }
 
 .main-content {
@@ -135,8 +146,14 @@ body.dark ::-webkit-scrollbar-thumb {
 
 .menu-item.active {
   background-color: #2b2b36;
-  color: #fff;
-  font-weight: 500;
+  color: #fff !important;
+  font-weight: 600;
+}
+
+.menu-item.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 .menu-tag {

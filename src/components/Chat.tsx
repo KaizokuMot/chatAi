@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Input, Button, Spin, Checkbox, message } from 'antd';
 import {
-  SendOutlined, RobotOutlined, LogoutOutlined, LoginOutlined,
+  SendOutlined, RobotOutlined,
   
   DeleteOutlined,
-  AppstoreOutlined, MenuOutlined, BarChartOutlined,
-  MenuFoldOutlined, BulbOutlined
+  MenuFoldOutlined
 } from '@ant-design/icons';
 import { auth, db } from '../firebase';
 import { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, getDocs, deleteDoc, doc } from 'firebase/firestore';
 import Settings from './Settings';
 import LoginModal from './LoginModal';
+import Sidebar from './Sidebar';
 
 interface MessageData {
   id?: string;
@@ -304,71 +304,15 @@ const Chat: React.FC = () => {
 
   return (
     <div className="app-container">
-      {/* Mobile Overlay */}
-      <div
-        className={`mobile-overlay ${mobileMenuOpen ? 'open' : ''}`}
-        onClick={() => setMobileMenuOpen(false)}
+      <Sidebar
+        mobileMenuOpen={mobileMenuOpen}
+        setMobileMenuOpen={setMobileMenuOpen}
+        darkMode={darkMode}
+        setDarkMode={setDarkMode}
+        logout={logout}
+        setLoginModalVisible={setLoginModalVisible}
+        isDevMode={isDevMode}
       />
-
-      {/* Left Sidebar */}
-      <div className={`left-sidebar ${mobileMenuOpen ? 'open' : ''}`}>
-        <div style={{ padding: '24px', display: 'flex', alignItems: 'center' }}>
-          <div style={{ background: '#ff8c42', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
-            <RobotOutlined style={{ color: '#fff', fontSize: 16 }} />
-          </div>
-          {/* <h2 style={{ margin: 0, fontSize: 18 }}>ChatAi</h2> */}
-        </div>
-
-        <div className="menu-list" style={{ marginTop: 16 }}>
-          {/* <div className="menu-item active">
-            <MessageOutlined /> <span style={{ marginLeft: 12 }}>ChatAi</span>
-          </div> */}
-          <div className="menu-item">
-            <AppstoreOutlined /> <span style={{ marginLeft: 12 }}>Generated</span>
-            <span style={{ fontSize: 6 }} className="menu-tag">COMING SOON</span>
-          </div>
-          <div className="menu-item">
-            <BarChartOutlined /> <span style={{ marginLeft: 12 }}>Statistics</span>
-            <span style={{ fontSize: 6 }} className="menu-tag">COMING SOON</span>
-          </div>
-          <div className="menu-item">
-            <MenuOutlined /> <span style={{ marginLeft: 12 }}>Agents</span>
-            <span style={{ fontSize: 6 }} className="menu-tag">COMING SOON</span>
-          </div>
-
-          <div className="menu-item" onClick={() => setDarkMode(!darkMode)}>
-            <BulbOutlined /> <span style={{ marginLeft: 12 }}>{darkMode ? 'Light Mode' : 'Dark Mode'}</span>
-          </div>
-          {/* <div className="menu-item" onClick={() => setSettingsVisible(true)}>
-            <SettingOutlined /> <span style={{ marginLeft: 12 }}>Settings</span>
-          </div> */}
-          {/* <div className="menu-item">
-            <QuestionCircleOutlined /> <span style={{ marginLeft: 12 }}>Updates & FAQ</span>
-          </div> */}
-        </div>
-
-        <div style={{ flex: 1 }} />
-
-        <div className="beta-card">
-          <div style={{ background: 'rgba(255,255,255,0.2)', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
-            <RobotOutlined style={{ fontSize: 18 }} />
-          </div>
-          <h3 style={{ margin: '0 0 2px 0', fontSize: 16 }}>Beta V.0.2</h3>
-          <p style={{ margin: 0, fontSize: 10, opacity: 0.6 }}>
-            Kalanzi Dixon
-          </p>
-        </div>
-
-        {auth.currentUser || isDevMode ? (
-          <div className="menu-item" onClick={logout} style={{ marginBottom: 16 }}>
-            <LogoutOutlined /> <span style={{ marginLeft: 12 }}>{isDevMode ? 'Exit Dev Mode' : 'Log out'}</span>
-          </div>
-        ) : (
-          <div className="menu-item" onClick={() => setLoginModalVisible(true)} style={{ marginBottom: 16 }}>
-            <LoginOutlined /> <span style={{ marginLeft: 12 }}>Log in</span>
-          </div>
-        )}
-      </div>
 
       {/* Main Content Area */}
       <div className="main-content">

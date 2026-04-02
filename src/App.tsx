@@ -4,6 +4,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebase';
 import { Spin } from 'antd';
 import Chat from './components/Chat';
+import Therapy from './components/Therapy';
 import './index.css';
 
 const App: React.FC = () => {
@@ -44,6 +45,7 @@ const App: React.FC = () => {
   return (
     <Router>
       <Routes>
+        <Route path="/therapy" element={<Therapy />} />
         <Route path="/*" element={<Chat />} />
       </Routes>
     </Router>
