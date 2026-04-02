@@ -59,10 +59,11 @@ const Therapy: React.FC = () => {
 
     try {
       if (!gradioClientRef.current) {
-        gradioClientRef.current = await Client.connect("https://47701b72e17b35743f.gradio.live/");
+        gradioClientRef.current = await Client.connect("https://46690b535c6d0162f5.gradio.live/");
       }
       setGradioStatus('online');
     } catch (e) {
+      console.error("Failed to connect to Gradio API:", e);
       setGradioStatus('error');
     }
   };
@@ -161,7 +162,7 @@ const Therapy: React.FC = () => {
 
   const handleReceiveVoice = async (transcript: string) => {
     if (isGenerating || !transcript) return;
-    
+
     const userMsg = transcript.trim();
     setLastUserTranscript(userMsg);
     // Hide transcript after 3 seconds
@@ -179,7 +180,7 @@ const Therapy: React.FC = () => {
     try {
       abortControllerRef.current = new AbortController();
       const modelName = localStorage.getItem('modelName') || 'gemma3:1b';
-      
+
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -223,13 +224,13 @@ const Therapy: React.FC = () => {
     setMessages([]);
     setUserName(null);
     localStorage.removeItem('therapy_user_name');
-    
+
     if (gradioClientRef.current) {
       try {
         await gradioClientRef.current.predict("/clear_memory", {});
       } catch (e) { console.error(e); }
     }
-    
+
     message.info("Session reset. No data kept.");
     greetUser();
   };
@@ -248,9 +249,9 @@ const Therapy: React.FC = () => {
         mobileMenuOpen={sidebarOpen}
         setMobileMenuOpen={setSidebarOpen}
         darkMode={true}
-        setDarkMode={() => {}}
-        logout={() => {}}
-        setLoginModalVisible={() => {}}
+        setDarkMode={() => { }}
+        logout={() => { }}
+        setLoginModalVisible={() => { }}
         isDevMode={isDevMode}
         hiddenByDefault={isSidebarHidden}
       />
@@ -258,9 +259,9 @@ const Therapy: React.FC = () => {
       <div className="therapy-main">
         {/* Floating Controls */}
         <div className="therapy-controls">
-          <Button 
-            type="text" 
-            icon={<MenuFoldOutlined />} 
+          <Button
+            type="text"
+            icon={<MenuFoldOutlined />}
             onClick={() => setIsSidebarHidden(!isSidebarHidden)}
             className="sidebar-toggle-btn"
           />
@@ -300,12 +301,12 @@ const Therapy: React.FC = () => {
               <div>Connecting to Dixon...</div>
             </div>
           ) : (
-            <Orb 
-              isPlaying={isPlaying} 
+            <Orb
+              isPlaying={isPlaying}
               isGenerating={isGenerating}
               isListening={isListening}
               // onClick={stopAndClear} // Click-to-stop disabled as requested
-              onClick={() => {}} 
+              onClick={() => { }}
             />
           )}
         </div>
@@ -313,12 +314,12 @@ const Therapy: React.FC = () => {
         {/* Status Indicator instead of Input Overlay */}
         <div className="hero-input-overlay" style={{ border: 'none', background: 'transparent' }}>
           <div className={`orb-label ${isListening ? 'listening-active' : ''}`} style={{ fontSize: 18, color: isListening ? '#00ffcc' : 'rgba(255,255,255,0.4)' }}>
-            {isListening ? 'Dixon is listening...' : isPlaying ? 'Dixon is speaking...' : isGenerating ? 'Dixon is thinking...' : 'Wait for Dixon...'}
+            {isListening ? 'Dixon is listening...' : isPlaying ? 'Dixon is speaking...' : isGenerating ? 'System thinking...' : 'still under constraction'}
           </div>
         </div>
 
         {/* Reset Action */}
-        <Button 
+        <Button
           className="clear-session-btn"
           icon={<CloseOutlined />}
           onClick={stopAndClear}
@@ -327,8 +328,8 @@ const Therapy: React.FC = () => {
         </Button>
       </div>
 
-      <audio 
-        ref={audioRef} 
+      <audio
+        ref={audioRef}
         onEnded={handleAudioEnd}
         style={{ display: 'none' }}
       />
