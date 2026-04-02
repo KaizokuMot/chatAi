@@ -12,6 +12,7 @@ const Therapy: React.FC = () => {
   const [userName, setUserName] = useState<string | null>(localStorage.getItem('therapy_user_name'));
   const [messages, setMessages] = useState<{ role: string, content: string }[]>([]);
   const [lastUserTranscript, setLastUserTranscript] = useState<string | null>(null);
+  const [interimTranscript, setInterimTranscript] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isListening, setIsListening] = useState(false);
@@ -90,18 +91,37 @@ const Therapy: React.FC = () => {
     if (SpeechRecognition) {
       recognitionRef.current = new SpeechRecognition();
       recognitionRef.current.continuous = false;
-      recognitionRef.current.interimResults = false;
+      recognitionRef.current.interimResults = true;
       recognitionRef.current.lang = 'en-US';
 
       recognitionRef.current.onstart = () => setIsListening(true);
-      recognitionRef.current.onend = () => setIsListening(false);
+      recognitionRef.current.onend = () => {
+        setIsListening(false);
+        setInterimTranscript('');
+      };
       recognitionRef.current.onerror = (event: any) => {
         console.error("Speech Recognition Error:", event.error);
         setIsListening(false);
+        setInterimTranscript('');
       };
       recognitionRef.current.onresult = (event: any) => {
-        const transcript = event.results[0][0].transcript;
-        if (transcript) handleReceiveVoice(transcript);
+        let interim = '';
+        let final = '';
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            final += event.results[i][0].transcript;
+          } else {
+            interim += event.results[i][0].transcript;
+          }
+        }
+        
+        if (interim) {
+          setInterimTranscript(interim);
+        }
+        if (final) {
+          setInterimTranscript('');
+          handleReceiveVoice(final);
+        }
       };
     } else {
       message.warning("Your browser does not support Speech Recognition. Try using Chrome.");
@@ -111,10 +131,19 @@ const Therapy: React.FC = () => {
   const startListening = () => {
     if (recognitionRef.current && !isListening && !isPlaying && !isGenerating) {
       try {
+        setInterimTranscript('');
         recognitionRef.current.start();
       } catch (e) {
         console.error("Speech Recognition start error:", e);
       }
+    }
+  };
+
+  const toggleListening = () => {
+    if (isListening) {
+      if (recognitionRef.current) recognitionRef.current.stop();
+    } else {
+      startListening();
     }
   };
 
@@ -305,16 +334,23 @@ const Therapy: React.FC = () => {
               isPlaying={isPlaying}
               isGenerating={isGenerating}
               isListening={isListening}
-              // onClick={stopAndClear} // Click-to-stop disabled as requested
-              onClick={() => { }}
+              onClick={toggleListening} 
             />
           )}
         </div>
 
         {/* Status Indicator instead of Input Overlay */}
         <div className="hero-input-overlay" style={{ border: 'none', background: 'transparent' }}>
-          <div className={`orb-label ${isListening ? 'listening-active' : ''}`} style={{ fontSize: 18, color: isListening ? '#00ffcc' : 'rgba(255,255,255,0.4)' }}>
-            {isListening ? 'Dixon is listening...' : isPlaying ? 'Dixon is speaking...' : isGenerating ? 'System thinking...' : 'system is still under constraction...'}
+          <div className={`orb-label ${isListening ? 'listening-active' : ''}`} style={{ fontSize: 18, color: isListening ? '#00ffcc' : 'rgba(255,255,255,0.4)', textAlign: 'center' }}>
+            {interimTranscript 
+              ? interimTranscript 
+              : isListening 
+                ? 'Dixon is listening...' 
+                : isPlaying 
+                  ? 'Dixon is speaking...' 
+                  : isGenerating 
+                    ? 'Dixon is thinking...' 
+                    : 'Click the Orb to speak'}
           </div>
         </div>
 
