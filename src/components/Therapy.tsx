@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button, Input, message, Spin } from 'antd';
-import { MenuFoldOutlined, RobotOutlined, DeleteOutlined } from '@ant-design/icons';
+import { MenuFoldOutlined, SendOutlined, CloseOutlined } from '@ant-design/icons';
 import { Client } from "@gradio/client";
 import Sidebar from './Sidebar';
 import Orb from './Orb';
 import './Therapy.css';
 
-const DIXON_SYSTEM_PROMPT = `You are Dixon, an empathetic and professional therapist AI. You were named after your developer. Your goal is to provide a safe space for users to talk about their feelings. ALWAYS start by greeting the user warmly and asking for their name if you don't know it. Once you know their name, refer to them by it frequently. Emphasize that this is a private session and NO user data is ever kept or stored. Be kind, supportive, and use therapeutic techniques like active listening and open-ended questions.`;
+const DIXON_SYSTEM_PROMPT = `You are Dixon, an empathetic and professional therapist AI. You were named after your developer. Your goal is to provide a safe space for users to talk about their feelings. ALWAYS start by greeting the user warmly and asking for their name if you don't know it. Once you know their name, refer to them by it frequently. Emphasize that this is a private session and NO user data is ever kept or stored. Be kind, supportive, and use therapeutic techniques like active listening and open-ended questions. Keep your responses relatively concise but deeply empathetic.`;
 
 const Therapy: React.FC = () => {
   const [userName, setUserName] = useState<string | null>(localStorage.getItem('therapy_user_name'));
@@ -28,7 +28,6 @@ const Therapy: React.FC = () => {
   const isDevMode = localStorage.getItem('devMode') === 'true';
 
   const checkSystemHealth = async () => {
-    // 1. Check Ollama (Brain)
     try {
       const baseUrl = apiUrl.replace(/\/api\/chat$/, '');
       const healthUrl = `${baseUrl}/api/health`;
@@ -36,48 +35,37 @@ const Therapy: React.FC = () => {
         method: 'GET',
         headers: { 'ngrok-skip-browser-warning': 'true' }
       });
-      if (response.ok || response.status === 404) { // 404 might just mean /api/health isn't mapped but server is up
-        setServerStatus('online');
-      } else {
-        setServerStatus('error');
-      }
+      if (response.ok || response.status === 404) setServerStatus('online');
+      else setServerStatus('error');
     } catch (e) {
-      console.error("Ollama Health check failed:", e);
       setServerStatus('error');
     }
 
-    // 2. Check Gradio (Voice)
     try {
       if (!gradioClientRef.current) {
         gradioClientRef.current = await Client.connect("https://47701b72e17b35743f.gradio.live/");
       }
       setGradioStatus('online');
     } catch (e) {
-      console.error("Gradio Health check failed:", e);
       setGradioStatus('error');
     }
   };
 
   useEffect(() => {
-    const init = async () => {
-      await checkSystemHealth();
-    };
-    init();
+    checkSystemHealth();
   }, []);
 
   useEffect(() => {
-    // Dixon greets only when system is ready
     if (serverStatus === 'online' && messages.length === 0) {
       greetUser();
     }
-    
     if (serverStatus === 'error' || gradioStatus === 'error') {
       message.error("One or more systems are offline. Dixon might not be able to talk properly.");
     }
   }, [serverStatus, gradioStatus]);
 
   const greetUser = async () => {
-    const greeting = "Hello! I am Dixon, your therapist. It's a pleasure to meet you. To get started, may I ask what your name is?";
+    const greeting = "Hello! I am Dixon, your therapist. It's a pleasure to meet you. To get started, may I ask your name?";
     setMessages([{ role: 'assistant', content: greeting }]);
     playSpeech(greeting);
   };
@@ -121,7 +109,6 @@ const Therapy: React.FC = () => {
     setMessages(newMessages);
     setIsGenerating(true);
 
-    // Handle User Name detection if not set
     if (!userName) {
       setUserName(userMsg);
       localStorage.setItem('therapy_user_name', userMsg);
@@ -152,9 +139,7 @@ const Therapy: React.FC = () => {
         playSpeech(botResponse);
       }
     } catch (err) {
-      if (err instanceof Error && err.name === 'AbortError') {
-        console.log("Request aborted");
-      } else {
+      if (!(err instanceof Error && err.name === 'AbortError')) {
         console.error("Dixon API Error:", err);
       }
     } finally {
@@ -181,22 +166,19 @@ const Therapy: React.FC = () => {
       } catch (e) { console.error(e); }
     }
     
-    message.success("Session cleared. No data was kept.");
+    message.info("Session reset. No data kept.");
     greetUser();
   };
 
+  const lastDixonMsg = messages.filter(m => m.role === 'assistant').slice(-1)[0];
+
   return (
-    <div className={`therapy-container app-container ${darkMode ? 'dark' : ''}`}>
+    <div className={`therapy-container app-container dark`}>
       <Sidebar
         mobileMenuOpen={sidebarOpen}
         setMobileMenuOpen={setSidebarOpen}
-        darkMode={darkMode}
-        setDarkMode={(val) => {
-          setDarkMode(val);
-          localStorage.setItem('darkMode', val ? 'true' : 'false');
-          if (val) document.body.classList.add('dark');
-          else document.body.classList.remove('dark');
-        }}
+        darkMode={true}
+        setDarkMode={() => {}}
         logout={() => {}}
         setLoginModalVisible={() => {}}
         isDevMode={isDevMode}
@@ -204,6 +186,7 @@ const Therapy: React.FC = () => {
       />
 
       <div className="therapy-main">
+        {/* Floating Controls */}
         <div className="therapy-controls">
           <Button 
             type="text" 
@@ -212,21 +195,27 @@ const Therapy: React.FC = () => {
             className="sidebar-toggle-btn"
           />
           <div className="system-status-group">
-            <div className={`status-badge ${serverStatus}`}>
-              BRAIN: {serverStatus.toUpperCase()}
-            </div>
-            <div className={`status-badge ${gradioStatus}`}>
-              VOICE: {gradioStatus.toUpperCase()}
-            </div>
+            <div className={`status-badge ${serverStatus}`}>BRAIN</div>
+            <div className={`status-badge ${gradioStatus}`}>VOICE</div>
           </div>
-          <div className="privacy-badge">🔒 Private Session - No Data Saved</div>
+          <div className="privacy-badge">🔒 Private Session</div>
         </div>
 
+        {/* Floating Message Overlay */}
+        {lastDixonMsg && (
+          <div className="floating-msg-area">
+            <div className="dixon-msg">
+              {lastDixonMsg.content}
+            </div>
+          </div>
+        )}
+
+        {/* Hero Center - The Orb */}
         <div className="orb-wrapper">
           {serverStatus === 'checking' || gradioStatus === 'checking' ? (
             <div className="warming-up">
               <Spin size="large" />
-              <div style={{ marginTop: 16 }}>Dixon is waking up...</div>
+              <div>Connecting to Dixon...</div>
             </div>
           ) : (
             <Orb 
@@ -237,40 +226,33 @@ const Therapy: React.FC = () => {
           )}
         </div>
 
-        <div className="therapy-footer">
-          <div className="therapy-history">
-            {messages.slice(-2).map((m, i) => (
-              <div key={i} className={`mini-msg ${m.role}`}>
-                {m.role === 'assistant' ? 'Dixon: ' : 'You: '} {m.content}
-              </div>
-            ))}
-          </div>
-          <div className="therapy-input-area">
-            <Input
-              placeholder="Type your feelings..."
+        {/* Minimal Bottom Interaction Overlay */}
+        <div className="hero-input-overlay">
+          <div className="minimal-input-container">
+            <input
+              placeholder={!userName ? "Enter your name..." : "Talk to Dixon..."}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onPressEnter={handleSend}
               disabled={isGenerating}
-              suffix={
-                <Button 
-                  type="primary" 
-                  icon={<RobotOutlined />}
-                  onClick={handleSend}
-                  disabled={isGenerating}
-                />
-              }
             />
             <Button 
-              danger 
-              icon={<DeleteOutlined />} 
-              onClick={stopAndClear} 
-              style={{ marginLeft: 8 }}
-            >
-              Clear Data
-            </Button>
+              className="send-btn-minimal"
+              icon={<SendOutlined />}
+              onClick={handleSend}
+              loading={isGenerating}
+            />
           </div>
         </div>
+
+        {/* Reset Action */}
+        <Button 
+          className="clear-session-btn"
+          icon={<CloseOutlined />}
+          onClick={stopAndClear}
+        >
+          Reset Session
+        </Button>
       </div>
 
       <audio 
