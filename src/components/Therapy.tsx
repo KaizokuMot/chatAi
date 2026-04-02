@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Button, message, Spin } from 'antd';
-import { MenuFoldOutlined, CloseOutlined } from '@ant-design/icons';
+import { Button, message, Spin, Popover } from 'antd';
+import { MenuFoldOutlined, CloseOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { Client } from "@gradio/client";
 import Sidebar from './Sidebar';
 import Orb from './Orb';
@@ -283,6 +283,19 @@ const Therapy: React.FC = () => {
 
   const lastDixonMsg = messages.filter(m => m.role === 'assistant').slice(-1)[0];
 
+  const statusContent = (
+    <>
+      <div className="system-status-group">
+        <div className={`status-badge ${serverStatus}`}>BRAIN</div>
+        <div className={`status-badge ${gradioStatus}`}>VOICE</div>
+        <div className={`status-badge ${micStatus === 'granted' ? 'online' : micStatus === 'denied' ? 'error' : 'checking'}`}>
+          MIC: {micStatus.toUpperCase()}
+        </div>
+      </div>
+      <div className="privacy-badge">🔒 Private Session</div>
+    </>
+  );
+
   return (
     <div className={`therapy-container app-container ${darkMode ? 'dark' : 'light'}`}>
       <Sidebar
@@ -305,14 +318,21 @@ const Therapy: React.FC = () => {
             onClick={() => setIsSidebarHidden(!isSidebarHidden)}
             className="sidebar-toggle-btn"
           />
-          <div className="system-status-group">
-            <div className={`status-badge ${serverStatus}`}>BRAIN</div>
-            <div className={`status-badge ${gradioStatus}`}>VOICE</div>
-            <div className={`status-badge ${micStatus === 'granted' ? 'online' : micStatus === 'denied' ? 'error' : 'checking'}`}>
-              MIC: {micStatus.toUpperCase()}
-            </div>
+          
+          <div className="desktop-status-group">
+            {statusContent}
           </div>
-          <div className="privacy-badge">🔒 Private Session</div>
+
+          <div className="mobile-status-trigger">
+            <Popover 
+              content={<div className="mobile-popover-content">{statusContent}</div>} 
+              trigger="click" 
+              placement="bottomRight"
+              overlayClassName={darkMode ? 'dark-popover' : ''}
+            >
+              <Button type="text" icon={<InfoCircleOutlined />} className="sidebar-toggle-btn" />
+            </Popover>
+          </div>
         </div>
 
         {/* Floating Message Overlay - Hidden for the first greeting */}

@@ -322,30 +322,62 @@
   border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
+/* Desktop: show status inline, hide mobile trigger */
+.desktop-status-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mobile-status-trigger {
+  display: none;
+}
+
+/* Mobile Popover Content */
+.mobile-popover-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 8px;
+}
+
+.mobile-popover-content .system-status-group {
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mobile-popover-content .privacy-badge {
+  text-align: center;
+}
+
+/* Dark popover override */
+.dark-popover .ant-popover-inner {
+  background: rgba(16, 20, 32, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dark-popover .ant-popover-arrow::before {
+  background: rgba(16, 20, 32, 0.95);
+}
+
 @media (max-width: 768px) {
   .therapy-controls { 
     top: 20px; 
     left: 15px; 
     right: 15px; 
-    flex-wrap: wrap; 
-    gap: 12px;
   }
-  .system-status-group {
-    gap: 8px;
-    padding: 4px 8px;
-    margin: 0 auto;
-    order: 3;
-    width: 100%;
-    justify-content: center;
+
+  /* Hide inline status, show the info trigger */
+  .desktop-status-group {
+    display: none;
   }
-  .status-badge {
-    font-size: 8px;
-    padding: 3px 6px;
+
+  .mobile-status-trigger {
+    display: block;
   }
-  .privacy-badge { 
-    display: none; /* Hide on mobile to save space */
-  }
-  .floating-msg-area { top: 110px; padding: 0 15px; }
+
+  .floating-msg-area { top: 80px; padding: 0 15px; }
   .dixon-msg { font-size: 15px; padding: 15px; }
   .user-msg-bubble { font-size: 14px; padding: 10px 16px; }
   .hero-input-overlay { bottom: 10vh; }
