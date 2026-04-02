@@ -314,7 +314,7 @@ const Therapy: React.FC = () => {
         {/* Status Indicator instead of Input Overlay */}
         <div className="hero-input-overlay" style={{ border: 'none', background: 'transparent' }}>
           <div className={`orb-label ${isListening ? 'listening-active' : ''}`} style={{ fontSize: 18, color: isListening ? '#00ffcc' : 'rgba(255,255,255,0.4)' }}>
-            {isListening ? 'Dixon is listening...' : isPlaying ? 'Dixon is speaking...' : isGenerating ? 'System thinking...' : 'still under constraction'}
+            {isListening ? 'Dixon is listening...' : isPlaying ? 'Dixon is speaking...' : isGenerating ? 'System thinking...' : 'system is still under constraction...'}
           </div>
         </div>
 
