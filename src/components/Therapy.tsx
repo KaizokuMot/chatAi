@@ -328,7 +328,7 @@ const Therapy: React.FC = () => {
               content={<div className="mobile-popover-content">{statusContent}</div>} 
               trigger="click" 
               placement="bottomRight"
-              overlayClassName={darkMode ? 'dark-popover' : ''}
+              overlayClassName={darkMode ? 'dark-popover' : 'light-popover'}
             >
               <Button type="text" icon={<InfoCircleOutlined />} className="sidebar-toggle-btn" />
             </Popover>

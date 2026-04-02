@@ -355,10 +355,38 @@
   background: rgba(16, 20, 32, 0.95);
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
 }
 
 .dark-popover .ant-popover-arrow::before {
   background: rgba(16, 20, 32, 0.95);
+}
+
+.dark-popover .privacy-badge {
+  color: rgba(255, 255, 255, 0.5);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Light popover override */
+.light-popover .ant-popover-inner {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: #333;
+}
+
+.light-popover .ant-popover-arrow::before {
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.light-popover .privacy-badge {
+  color: rgba(0, 0, 0, 0.6);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.light-popover .status-badge.checking {
+  color: rgba(0, 0, 0, 0.5);
+  border-color: rgba(0, 0, 0, 0.2);
 }
 
 @media (max-width: 768px) {
