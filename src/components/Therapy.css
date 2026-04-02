@@ -261,6 +261,67 @@
   color: #ff3e3e;
 }
 
+/* Light Theme Overrides */
+.therapy-container.light {
+  background: radial-gradient(circle at 50% 50%, #f0f4f8 0%, #e0e5ec 100%);
+  color: #333333;
+}
+
+.light .sidebar-toggle-btn {
+  color: rgba(0, 0, 0, 0.4);
+}
+
+.light .sidebar-toggle-btn:hover {
+  color: #ff8c42;
+}
+
+.light .system-status-group {
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.light .status-badge.checking {
+  color: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.light .privacy-badge {
+  background: rgba(0, 0, 0, 0.05);
+  color: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.light .warming-up {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.light .dixon-msg {
+  color: #333333;
+}
+
+.light .user-msg-bubble {
+  background: rgba(0, 150, 255, 0.1);
+  border: 1px solid rgba(0, 150, 255, 0.3);
+  color: #0077cc;
+}
+
+.light .orb-label {
+  color: rgba(0, 0, 0, 0.5) !important;
+}
+
+.light .orb-container:hover .orb-label {
+  color: rgba(0, 0, 0, 0.8) !important;
+}
+
+.light .listening-active {
+  color: #0077cc !important;
+}
+
+.light .therapy-input-area {
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
 @media (max-width: 768px) {
   .therapy-controls { 
     top: 20px; 

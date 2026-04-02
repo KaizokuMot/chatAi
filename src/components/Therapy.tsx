@@ -21,6 +21,7 @@ const Therapy: React.FC = () => {
   const [isSidebarHidden, setIsSidebarHidden] = useState(true);
   const [serverStatus, setServerStatus] = useState<'checking' | 'online' | 'error'>('checking');
   const [gradioStatus, setGradioStatus] = useState<'checking' | 'online' | 'error'>('checking');
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const gradioClientRef = useRef<any>(null);
@@ -76,6 +77,16 @@ const Therapy: React.FC = () => {
       if (recognitionRef.current) recognitionRef.current.stop();
     };
   }, []);
+
+  useEffect(() => {
+    if (darkMode) {
+      document.body.classList.add('dark');
+      localStorage.setItem('darkMode', 'true');
+    } else {
+      document.body.classList.remove('dark');
+      localStorage.setItem('darkMode', 'false');
+    }
+  }, [darkMode]);
 
   useEffect(() => {
     if (serverStatus === 'online' && messages.length === 0) {
@@ -273,12 +284,12 @@ const Therapy: React.FC = () => {
   const lastDixonMsg = messages.filter(m => m.role === 'assistant').slice(-1)[0];
 
   return (
-    <div className={`therapy-container app-container dark`}>
+    <div className={`therapy-container app-container ${darkMode ? 'dark' : 'light'}`}>
       <Sidebar
         mobileMenuOpen={sidebarOpen}
         setMobileMenuOpen={setSidebarOpen}
-        darkMode={true}
-        setDarkMode={() => { }}
+        darkMode={darkMode}
+        setDarkMode={setDarkMode}
         logout={() => { }}
         setLoginModalVisible={() => { }}
         isDevMode={isDevMode}
