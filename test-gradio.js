@@ -1,7 +1,7 @@
 import { Client } from "@gradio/client";
 
 async function test() {
-  const url = "https://966f-102-86-13-172.ngrok-free.app";
+  const url = "https://8ac6-102-86-13-172.ngrok-free.app";
   try {
     console.log(`Connecting to Gradio at ${url}...`);
     const app = await Client.connect(url);
