@@ -33,17 +33,23 @@ export function useMossVoice() {
           const stage = msg.stage || "generating";
           setEngineStatus(`voice engine: ${stage}...`);
         } else if (msg.type === "data") {
+          console.log("Gradio Voice Raw Data:", msg.data);
           setEngineStatus("playing audio...");
           const responseData = msg.data as any[];
           const audioData = responseData[1];
-          if (audioData && audioData.url) {
-            const audio = new Audio(audioData.url);
+          
+          // Depending on Gradio version/config, audioData could be a string or an object containing .url
+          const audioUrl = typeof audioData === 'string' ? audioData : audioData?.url;
+
+          if (audioUrl) {
+            const audio = new Audio(audioUrl);
             audio.onended = () => {
               setIsSpeaking(false);
               setEngineStatus('idle');
             };
             await audio.play();
           } else {
+            console.error("Missing audio URL in data payload. Complete Gradio response:", msg.data);
             throw new Error("No audio returned from server");
           }
         }
