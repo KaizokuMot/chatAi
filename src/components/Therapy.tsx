@@ -6,7 +6,7 @@ import Orb from './Orb';
 import { useMossVoice } from '../hooks/useMossVoice';
 import './Therapy.css';
 
-const DIXON_SYSTEM_PROMPT = `You are Dixon, an empathetic, sassy and professional therapist AI. You were named after your developer. Your goal is to provide a safe space for users to talk about their feelings or any advice. ALWAYS start by greeting the user warmly and asking for their name if you don't know it. Once you know their name, refer to them by it frequently. Emphasize that this is a private session and NO user data is ever kept or stored. Be kind, supportive, creative, understanding and use therapeutic techniques like active listening and open-ended questions and words. Keep your responses relatively concise and short but deeply empathetic. Since this is a voice-only session, be prepared for short or informal user speech.`;
+const DIXON_SYSTEM_PROMPT = `You are Ruth, an empathetic, sassy and professional therapist AI. You were named after your developer. Your goal is to provide a safe space for users to talk about their feelings or any advice. ALWAYS start by greeting the user warmly and asking for their name if you don't know it. Once you know their name, refer to them by it frequently. Emphasize that this is a private session and NO user data is ever kept or stored. Be kind, supportive, creative, understanding and use therapeutic techniques like active listening and open-ended questions and words. Keep your responses relatively concise and short but deeply empathetic. Since this is a voice-only session, be prepared for short or informal user speech.`;
 
 const Therapy: React.FC = () => {
   const [userName, setUserName] = useState<string | null>(localStorage.getItem('therapy_user_name'));
@@ -308,6 +308,15 @@ const Therapy: React.FC = () => {
           </div>
         )}
 
+        {/* Live Interim Transcript Bubble */}
+        {interimTranscript && (
+          <div className="floating-msg-area interim-transcript-area">
+            <div className="interim-msg-bubble">
+              {interimTranscript}
+            </div>
+          </div>
+        )}
+
         {/* Hero Center - The Orb */}
         <div className="orb-wrapper">
           {serverStatus === 'checking' || gradioStatus === 'checking' ? (
@@ -328,15 +337,13 @@ const Therapy: React.FC = () => {
         {/* Status Indicator instead of Input Overlay */}
         <div className="hero-input-overlay" style={{ border: 'none', background: 'transparent' }}>
           <div className={`orb-label ${isListening ? 'listening-active' : ''}`} style={{ fontSize: 10, color: isListening ? '#00ffcc' : 'rgba(255,255,255,0.4)', textAlign: 'center' }}>
-            {interimTranscript
-              ? interimTranscript
-              : isListening
-                ? 'Dixon is listening...'
-                : isSpeaking
-                  ? 'Dixon is speaking...'
-                  : isGenerating
-                    ? 'Dixon is cooking...'
-                    : 'a ghost in the shell...'}
+            {isListening && !interimTranscript
+              ? 'Dixon is listening...'
+              : isSpeaking
+                ? 'Dixon is speaking...'
+                : isGenerating
+                  ? 'Dixon is cooking...'
+                  : 'a ghost in the shell...'}
           </div>
         </div>
 

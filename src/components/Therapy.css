@@ -59,6 +59,31 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+.interim-transcript-area {
+  top: auto;
+  bottom: 25vh;
+  z-index: 60;
+}
+
+.interim-msg-bubble {
+  padding: 12px 24px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(8px);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.6);
+  font-style: italic;
+  font-size: 16px;
+  animation: pulseOpacity 2s infinite ease-in-out;
+  text-align: center;
+  max-width: 80%;
+}
+
+@keyframes pulseOpacity {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
 .therapy-input-area {
   display: flex;
   gap: 16px;
