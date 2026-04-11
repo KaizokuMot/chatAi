@@ -33,25 +33,35 @@ export function useMossVoice() {
           const stage = msg.stage || "generating";
           setEngineStatus(`voice engine: ${stage}...`);
         } else if (msg.type === "data") {
-          console.log("Gradio Voice Raw Data:", msg.data);
-          setEngineStatus("playing audio...");
           const responseData = msg.data as any[];
           const audioData = responseData[1];
-          
-          // Depending on Gradio version/config, audioData could be a string or an object containing .url
-          const audioUrl = typeof audioData === 'string' ? audioData : audioData?.url;
+          const infoStatus = responseData[2]; // This contains detailed progress like "chunks=10 | audio=4.48s"
 
-          if (audioUrl) {
-            const audio = new Audio(audioUrl);
-            audio.onended = () => {
-              setIsSpeaking(false);
-              setEngineStatus('idle');
-            };
-            await audio.play();
-          } else {
-            console.error("Missing audio URL in data payload. Complete Gradio response:", msg.data);
-            throw new Error("No audio returned from server");
+          // Update UI with the detailed text status from the Gradio engine
+          if (infoStatus) {
+            setEngineStatus(infoStatus);
           }
+
+          // If Final Audio is populated (usually happens on the final event), play it!
+          if (audioData) {
+            let audioUrl = typeof audioData === 'string' ? audioData : audioData?.url;
+            
+            // Fallback for Gradio 4+ if it returns `.path` instead of auto-resolving `.url`
+            if (!audioUrl && audioData?.path) {
+              audioUrl = `https://8ac6-102-86-13-172.ngrok-free.app/file=${audioData.path}`;
+            }
+
+            if (audioUrl) {
+               setEngineStatus("playing audio...");
+               const audio = new Audio(audioUrl);
+               audio.onended = () => {
+                 setIsSpeaking(false);
+                 setEngineStatus('idle');
+               };
+               await audio.play();
+            }
+          }
+          // Note: We DO NOT throw an error if audioData is null, because intermediate streaming events will naturally have null audio until the final chunk.
         }
       }
 
