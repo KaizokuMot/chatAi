@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button, message, Spin, Popover } from 'antd';
-import { MenuFoldOutlined, CloseOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { MenuFoldOutlined, MenuUnfoldOutlined, CloseOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import Sidebar from './Sidebar';
 import Orb from './Orb';
 import { useMossVoice } from '../hooks/useMossVoice';
@@ -266,8 +266,11 @@ const Therapy: React.FC = () => {
         <div className="therapy-controls">
           <Button
             type="text"
-            icon={<MenuFoldOutlined />}
-            onClick={() => setIsSidebarHidden(!isSidebarHidden)}
+            icon={isSidebarHidden ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+            onClick={() => {
+              setIsSidebarHidden(!isSidebarHidden);
+              setSidebarOpen(!sidebarOpen);
+            }}
             className="sidebar-toggle-btn"
           />
 
@@ -310,7 +313,7 @@ const Therapy: React.FC = () => {
           {serverStatus === 'checking' || gradioStatus === 'checking' ? (
             <div className="warming-up">
               <Spin size="large" />
-              <div>oops...</div>
+              <div>warming up engines...</div>
             </div>
           ) : (
             <Orb
