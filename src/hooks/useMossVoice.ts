@@ -45,20 +45,20 @@ export function useMossVoice() {
           // If Final Audio is populated (usually happens on the final event), play it!
           if (audioData) {
             let audioUrl = typeof audioData === 'string' ? audioData : audioData?.url;
-            
+
             // Fallback for Gradio 4+ if it returns `.path` instead of auto-resolving `.url`
             if (!audioUrl && audioData?.path) {
-              audioUrl = `https://8ac6-102-86-13-172.ngrok-free.app/file=${audioData.path}`;
+              audioUrl = `https://f09f-102-86-13-172.ngrok-free.app/file=${audioData.path}`;
             }
 
             if (audioUrl) {
-               setEngineStatus("playing audio...");
-               const audio = new Audio(audioUrl);
-               audio.onended = () => {
-                 setIsSpeaking(false);
-                 setEngineStatus('idle');
-               };
-               await audio.play();
+              setEngineStatus("playing audio...");
+              const audio = new Audio(audioUrl);
+              audio.onended = () => {
+                setIsSpeaking(false);
+                setEngineStatus('idle');
+              };
+              await audio.play();
             }
           }
           // Note: We DO NOT throw an error if audioData is null, because intermediate streaming events will naturally have null audio until the final chunk.
