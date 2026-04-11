@@ -92,13 +92,6 @@ const Therapy: React.FC = () => {
     }
   }, [serverStatus, gradioStatus]);
 
-  useEffect(() => {
-    if (!isSpeaking && messages.length > 0 && messages[messages.length - 1].role === 'assistant') {
-      // Automatically start listening after Dixon speaks
-      const timer = setTimeout(() => startListening(), 500);
-      return () => clearTimeout(timer);
-    }
-  }, [isSpeaking]);
 
   const initSpeechRecognition = () => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -327,7 +320,7 @@ const Therapy: React.FC = () => {
         </div>
 
         {/* Status Indicator instead of Input Overlay */}
-        <div className="hero-input-overlay" style={{ border: 'none', background: 'transparent' }}>
+        <div className="hero-input-overlay" style={{ border: 'none', background: 'transparent', pointerEvents: 'none' }}>
           <div className={`orb-label ${isListening ? 'listening-active' : ''}`} style={{ fontSize: 10, color: isListening ? '#00ffcc' : 'rgba(255,255,255,0.4)', textAlign: 'center' }}>
             {isListening && !interimTranscript
               ? 'Ruth is listening...'
