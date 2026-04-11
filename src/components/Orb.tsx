@@ -31,10 +31,10 @@ const Orb: React.FC<OrbProps> = ({ isGenerating, isPlaying, isListening, onClick
       </div>
       <div className="orb-label">
         {isPlaying
-          ? 'Listening to Dixon...'
+          ? 'Listening...'
           : isGenerating
-          ? 'Dixon is thinking...'
-          : 'Click to talk to Dixon'}
+            ? 'Dixon is cooking...'
+            : 'Tap to talk'}
       </div>
     </div>
   );

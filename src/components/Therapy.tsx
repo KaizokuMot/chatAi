@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button, message, Spin, Popover } from 'antd';
 import { MenuFoldOutlined, CloseOutlined, InfoCircleOutlined } from '@ant-design/icons';
-import { Client } from "@gradio/client";
 import Sidebar from './Sidebar';
 import Orb from './Orb';
+import { useMossVoice } from '../hooks/useMossVoice';
 import './Therapy.css';
 
-const DIXON_SYSTEM_PROMPT = `You are Dixon, an empathetic and professional therapist AI. You were named after your developer. Your goal is to provide a safe space for users to talk about their feelings. ALWAYS start by greeting the user warmly and asking for their name if you don't know it. Once you know their name, refer to them by it frequently. Emphasize that this is a private session and NO user data is ever kept or stored. Be kind, supportive, and use therapeutic techniques like active listening and open-ended questions. Keep your responses relatively concise but deeply empathetic. Since this is a voice-only session, be prepared for short or informal user speech.`;
+const DIXON_SYSTEM_PROMPT = `You are Dixon, an empathetic, sassy and professional therapist AI. You were named after your developer. Your goal is to provide a safe space for users to talk about their feelings or any advice. ALWAYS start by greeting the user warmly and asking for their name if you don't know it. Once you know their name, refer to them by it frequently. Emphasize that this is a private session and NO user data is ever kept or stored. Be kind, supportive, creative, understanding and use therapeutic techniques like active listening and open-ended questions and words. Keep your responses relatively concise and short but deeply empathetic. Since this is a voice-only session, be prepared for short or informal user speech.`;
 
 const Therapy: React.FC = () => {
   const [userName, setUserName] = useState<string | null>(localStorage.getItem('therapy_user_name'));
@@ -14,7 +14,7 @@ const Therapy: React.FC = () => {
   const [lastUserTranscript, setLastUserTranscript] = useState<string | null>(null);
   const [interimTranscript, setInterimTranscript] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const { speakText, isSpeaking } = useMossVoice();
   const [isListening, setIsListening] = useState(false);
   const [micStatus, setMicStatus] = useState<'prompt' | 'granted' | 'denied'>('prompt');
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -23,8 +23,6 @@ const Therapy: React.FC = () => {
   const [gradioStatus, setGradioStatus] = useState<'checking' | 'online' | 'error'>('checking');
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
 
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const gradioClientRef = useRef<any>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const recognitionRef = useRef<any>(null);
 
@@ -60,9 +58,6 @@ const Therapy: React.FC = () => {
     }
 
     try {
-      if (!gradioClientRef.current) {
-        gradioClientRef.current = await Client.connect("https://92120d8a65b4d70915.gradio.live/");
-      }
       setGradioStatus('online');
     } catch (e) {
       console.error("Failed to connect to Gradio API:", e);
@@ -96,6 +91,14 @@ const Therapy: React.FC = () => {
       message.error("One or more systems are offline. Dixon might not be able to talk properly.");
     }
   }, [serverStatus, gradioStatus]);
+
+  useEffect(() => {
+    if (!isSpeaking && messages.length > 0 && messages[messages.length - 1].role === 'assistant') {
+      // Automatically start listening after Dixon speaks
+      const timer = setTimeout(() => startListening(), 500);
+      return () => clearTimeout(timer);
+    }
+  }, [isSpeaking]);
 
   const initSpeechRecognition = () => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -140,7 +143,7 @@ const Therapy: React.FC = () => {
   };
 
   const startListening = () => {
-    if (recognitionRef.current && !isListening && !isPlaying && !isGenerating) {
+    if (recognitionRef.current && !isListening && !isSpeaking && !isGenerating) {
       try {
         setInterimTranscript('');
         recognitionRef.current.start();
@@ -161,44 +164,9 @@ const Therapy: React.FC = () => {
   const greetUser = async () => {
     const greeting = "Hello! I am Dixon, your therapist. It's a pleasure to meet you. To get started, may I ask your name?";
     setMessages([{ role: 'assistant', content: greeting }]);
-    playSpeech(greeting);
+    speakText(greeting);
   };
 
-  const playSpeech = async (text: string) => {
-    if (!gradioClientRef.current) return;
-    setIsPlaying(true);
-    setIsListening(false);
-    try {
-      // Use local training audio as reference
-      const response = await fetch('/src/assets/voice/training_uU5TjliM.wav');
-      const refAudio = await response.blob();
-      const result: any = await gradioClientRef.current.predict("/generate_speech", {
-        text: text,
-        reference_audio: refAudio,
-        max_new_tokens: 50,
-        speed: 0.5,
-        text_temp: 0.1,
-        text_top_p: 0.1,
-        text_top_k: 1,
-        audio_temp: 0.1,
-        audio_top_p: 0.1,
-        audio_top_k: 1,
-        audio_repetition_penalty: 1,
-        n_vq: 8,
-      });
-
-      if (result.data && result.data[0]) {
-        const audioUrl = result.data[0].url;
-        if (audioRef.current) {
-          audioRef.current.src = audioUrl;
-          audioRef.current.play();
-        }
-      }
-    } catch (err) {
-      console.error("TTS Error:", err);
-      setIsPlaying(false);
-    }
-  };
 
   const handleReceiveVoice = async (transcript: string) => {
     if (isGenerating || !transcript) return;
@@ -239,7 +207,7 @@ const Therapy: React.FC = () => {
         const data = await response.json();
         const botResponse = data.message?.content || "I am here to listen.";
         setMessages(prev => [...prev, { role: 'assistant', content: botResponse }]);
-        playSpeech(botResponse);
+        speakText(botResponse);
       }
     } catch (err) {
       if (!(err instanceof Error && err.name === 'AbortError')) {
@@ -251,11 +219,6 @@ const Therapy: React.FC = () => {
   };
 
   const stopAndClear = async () => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-    }
-    setIsPlaying(false);
     setIsGenerating(false);
     setIsListening(false);
     if (abortControllerRef.current) abortControllerRef.current.abort();
@@ -265,21 +228,10 @@ const Therapy: React.FC = () => {
     setUserName(null);
     localStorage.removeItem('therapy_user_name');
 
-    if (gradioClientRef.current) {
-      try {
-        await gradioClientRef.current.predict("/clear_memory", {});
-      } catch (e) { console.error(e); }
-    }
-
     message.info("Session reset. No data kept.");
     greetUser();
   };
 
-  const handleAudioEnd = () => {
-    setIsPlaying(false);
-    // Automatically start listening after Dixon speaks
-    setTimeout(() => startListening(), 500);
-  };
 
   const lastDixonMsg = messages.filter(m => m.role === 'assistant').slice(-1)[0];
 
@@ -289,10 +241,10 @@ const Therapy: React.FC = () => {
         <div className={`status-badge ${serverStatus}`}>BRAIN</div>
         <div className={`status-badge ${gradioStatus}`}>VOICE</div>
         <div className={`status-badge ${micStatus === 'granted' ? 'online' : micStatus === 'denied' ? 'error' : 'checking'}`}>
-          MIC: {micStatus.toUpperCase()}
+          HEARING: {micStatus.toUpperCase()}
         </div>
       </div>
-      <div className="privacy-badge">🔒 Private Session</div>
+      <div className="privacy-badge">Private Session</div>
     </>
   );
 
@@ -318,15 +270,15 @@ const Therapy: React.FC = () => {
             onClick={() => setIsSidebarHidden(!isSidebarHidden)}
             className="sidebar-toggle-btn"
           />
-          
+
           <div className="desktop-status-group">
             {statusContent}
           </div>
 
           <div className="mobile-status-trigger">
-            <Popover 
-              content={<div className="mobile-popover-content">{statusContent}</div>} 
-              trigger="click" 
+            <Popover
+              content={<div className="mobile-popover-content">{statusContent}</div>}
+              trigger="click"
               placement="bottomRight"
               overlayClassName={darkMode ? 'dark-popover' : 'light-popover'}
             >
@@ -362,7 +314,7 @@ const Therapy: React.FC = () => {
             </div>
           ) : (
             <Orb
-              isPlaying={isPlaying}
+              isPlaying={isSpeaking}
               isGenerating={isGenerating}
               isListening={isListening}
               onClick={toggleListening}
@@ -372,16 +324,16 @@ const Therapy: React.FC = () => {
 
         {/* Status Indicator instead of Input Overlay */}
         <div className="hero-input-overlay" style={{ border: 'none', background: 'transparent' }}>
-          <div className={`orb-label ${isListening ? 'listening-active' : ''}`} style={{ fontSize: 18, color: isListening ? '#00ffcc' : 'rgba(255,255,255,0.4)', textAlign: 'center' }}>
+          <div className={`orb-label ${isListening ? 'listening-active' : ''}`} style={{ fontSize: 10, color: isListening ? '#00ffcc' : 'rgba(255,255,255,0.4)', textAlign: 'center' }}>
             {interimTranscript
               ? interimTranscript
               : isListening
                 ? 'Dixon is listening...'
-                : isPlaying
+                : isSpeaking
                   ? 'Dixon is speaking...'
                   : isGenerating
-                    ? 'Dixon is thinking...'
-                    : 'service under construction'}
+                    ? 'Dixon is cooking...'
+                    : 'a ghost in the shell...'}
           </div>
         </div>
 
@@ -395,11 +347,6 @@ const Therapy: React.FC = () => {
         </Button>
       </div>
 
-      <audio
-        ref={audioRef}
-        onEnded={handleAudioEnd}
-        style={{ display: 'none' }}
-      />
     </div>
   );
 };
