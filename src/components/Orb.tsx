@@ -33,7 +33,7 @@ const Orb: React.FC<OrbProps> = ({ isGenerating, isPlaying, isListening, onClick
         {isPlaying
           ? 'Listening...'
           : isGenerating
-            ? 'Dixon is cooking...'
+            ? 'pistons firing'
             : 'Tap to talk'}
       </div>
     </div>
