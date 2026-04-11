@@ -14,7 +14,7 @@ const Therapy: React.FC = () => {
   const [lastUserTranscript, setLastUserTranscript] = useState<string | null>(null);
   const [interimTranscript, setInterimTranscript] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
-  const { speakText, isSpeaking } = useMossVoice();
+  const { speakText, isSpeaking, engineStatus } = useMossVoice();
   const [isListening, setIsListening] = useState(false);
   const [micStatus, setMicStatus] = useState<'prompt' | 'granted' | 'denied'>('prompt');
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -233,7 +233,7 @@ const Therapy: React.FC = () => {
   };
 
 
-  const lastDixonMsg = messages.filter(m => m.role === 'assistant').slice(-1)[0];
+
 
   const statusContent = (
     <>
@@ -289,15 +289,7 @@ const Therapy: React.FC = () => {
             </Popover>
           </div>
         </div>
-
-        {/* Floating Message Overlay - Hidden for the first greeting */}
-        {lastDixonMsg && messages.length > 1 && (
-          <div className="floating-msg-area">
-            <div className="dixon-msg">
-              {lastDixonMsg.content}
-            </div>
-          </div>
-        )}
+        {/* AI Message Overlay Removed as requested for Voice-only experience */}
 
         {/* User Transcript Overlay */}
         {lastUserTranscript && (
@@ -338,11 +330,11 @@ const Therapy: React.FC = () => {
         <div className="hero-input-overlay" style={{ border: 'none', background: 'transparent' }}>
           <div className={`orb-label ${isListening ? 'listening-active' : ''}`} style={{ fontSize: 10, color: isListening ? '#00ffcc' : 'rgba(255,255,255,0.4)', textAlign: 'center' }}>
             {isListening && !interimTranscript
-              ? 'Dixon is listening...'
+              ? 'Ruth is listening...'
               : isSpeaking
-                ? 'Dixon is speaking...'
+                ? engineStatus
                 : isGenerating
-                  ? 'Dixon is cooking...'
+                  ? 'Ruth is thinking...'
                   : 'a ghost in the shell...'}
           </div>
         </div>
