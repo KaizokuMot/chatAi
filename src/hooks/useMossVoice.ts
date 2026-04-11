@@ -8,12 +8,10 @@ export function useMossVoice() {
   const speakText = async (aiText: string) => {
     setIsSpeaking(true);
     setError(null);
-   
+
     try {
       // Connect to your ngrok or Gradio exposed URL
-      const app = await Client.connect("https://cce8-197-239-7-140.ngrok-free.app");
-     
-      // Call the API endpoint (matches the Gradio generate button exactly)
+      const app = await Client.connect("https://966f-102-86-13-172.ngrok-free.app");
       const result = await app.predict("/predict", [
         "User Prompt",             // user_text (context)
         aiText,                    // assistant_text (What gets spoken!)
@@ -29,11 +27,11 @@ export function useMossVoice() {
       // The returned result has a standard structure. `result.data[1]` contains the output Audio.
       const responseData = result.data as any[];
       const audioData = responseData[1];
-     
+
       if (audioData && audioData.url) {
         // Instantiate real temporary HTML Audio object and play it
         const audio = new Audio(audioData.url);
-       
+
         audio.onended = () => setIsSpeaking(false);
         await audio.play();
       } else {
