@@ -13,7 +13,9 @@ export function useMossVoice() {
 
     try {
       // Connect to your ngrok or Gradio exposed URL
-      const app = await Client.connect("https://8ac6-102-86-13-172.ngrok-free.app");
+      const app = await Client.connect("https://8ac6-102-86-13-172.ngrok-free.app", {
+        headers: { "ngrok-skip-browser-warning": "true" }
+      });
       const submission = app.submit("/predict", [
         "User Prompt",             // user_text (context)
         aiText,                    // assistant_text (What gets spoken!)
