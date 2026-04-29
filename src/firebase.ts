@@ -4,28 +4,36 @@ import { getFirestore } from "firebase/firestore";
 
 // TODO: Replace with your Firebase config from the Firebase Console
 const firebaseConfig = {
-  apiKey: "AIzaSyAZpLNyS9RN7BN6eAcD5AvHmgKBi-eYfmA",
-  authDomain: "moxiescreen.firebaseapp.com",
-  databaseURL: "https://moxiescreen-default-rtdb.firebaseio.com",
-  projectId: "moxiescreen",
-  storageBucket: "moxiescreen.appspot.com",
-  messagingSenderId: "346104076821",
-  appId: "1:346104076821:web:b9e28de331612ead48cc1c",
-  measurementId: "G-H0W642QTFT" 
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH,
+  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STROGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_messagingSenderId,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_measurementId
 };
 
 
 // Initialize Firebase
-console.log("Firebase: Initializing app with config...");
-const app = initializeApp(firebaseConfig);
+console.log("Firebase: Initializing app...");
+let app;
+let auth: any;
+let db: any;
 
-// Initialize Firebase Authentication and get a reference to the service
-console.log("Firebase: Initializing Auth...");
-export const auth = getAuth(app);
+try {
+  app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  db = getFirestore(app);
+  console.log("Firebase: Initialized successfully.");
+} catch (error) {
+  console.error("Firebase: Initialization failed (check API key):", error);
+  // Provide mock objects so the app doesn't crash
+  auth = { onAuthStateChanged: (cb: any) => { cb(null); return () => {}; }, signOut: () => Promise.resolve() };
+  db = {}; 
+}
 
-// Initialize Cloud Firestore and get a reference to the service
-console.log("Firebase: Initializing Firestore...");
-export const db = getFirestore(app);
+export { auth, db };
 
 
 

@@ -101,9 +101,9 @@ export const exportToolsConfig = (): string => {
  * Log all tools status
  */
 export const logToolsStatus = (): void => {
-  console.group('🛠️ AI Tools Status');
-  Object.entries(AI_TOOLS).forEach(([name, tool]) => {
-    const status = tool.enabled ? '✅ ENABLED' : '❌ DISABLED';
+  console.group('AI Tools Status');
+  Object.values(AI_TOOLS).forEach((tool) => {
+    const status = tool.enabled ? '[ENABLED]' : '[DISABLED]';
     console.log(`${status} - ${tool.name} (v${tool.version})`);
   });
   console.groupEnd();

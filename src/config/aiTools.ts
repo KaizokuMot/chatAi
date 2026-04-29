@@ -120,7 +120,6 @@ export const getToolsByCategory = (category: AITool['category']): AITool[] => {
  * Generate a formatted tools description for the AI model
  */
 export const generateToolsDescription = (): string => {
-  const enabledTools = getEnabledTools();
   const toolsByCategory = {
     information: getToolsByCategory('information'),
     research: getToolsByCategory('research'),

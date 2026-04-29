@@ -5,27 +5,7 @@
   --border-color: #e5e7eb;
   --bg-message-bot: #ffffff;
   --border-message-bot: #f0f0f0;
-  --bg-message-user: #f0f2f5;
-  --text-message-user: #000;
-  --bg-input-container: #ffffff;
-  --bg-input: transparent;
-  --bg-search: #f0f2f5;
-  --text-main: #374151;
-  --text-primary: #000000;
-  --text-secondary: #9ca3af;
-  --bg-topbar: #ffffff;
-  --bg-icon-btn: #f0f2f5;
-  --sidebar-left-bg: #1c1c27;
-}
-
-body.dark {
-  --bg-body: #121212;
-  --bg-main: #181a1b;
-  --bg-sidebar-right: #1e2022;
-  --border-color: #333333;
-  --bg-message-bot: #232527;
-  --border-message-bot: #333333;
-  --bg-message-user: #ff8c42;
+  --bg-message-user: #3b82f6;
   --text-message-user: #ffffff;
   --bg-input-container: #232527;
   --bg-input: transparent;
@@ -36,6 +16,7 @@ body.dark {
   --bg-topbar: #1e2022;
   --bg-icon-btn: #333333;
   --sidebar-left-bg: #15161d;
+  --accent-color: #3b82f6;
 }
 
 body {
@@ -120,23 +101,23 @@ body.dark ::-webkit-scrollbar-thumb {
 
 .beta-card {
   margin: 16px;
-  padding: 20px;
+  padding: 16px;
   border-radius: 12px;
-  background: #ff8c42;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   color: white;
-  position: relative;
-  overflow: hidden;
 }
 
 .menu-item {
   display: flex;
   align-items: center;
-  padding: 12px 20px;
+  padding: 10px 16px;
   color: #9ca3af;
   cursor: pointer;
   border-radius: 8px;
-  margin: 4px 16px;
+  margin: 2px 12px;
   transition: all 0.2s;
+  font-size: 13.5px;
 }
 
 .menu-item:hover {
@@ -145,9 +126,9 @@ body.dark ::-webkit-scrollbar-thumb {
 }
 
 .menu-item.active {
-  background-color: #2b2b36;
-  color: #fff !important;
-  font-weight: 600;
+  background-color: rgba(59, 130, 246, 0.1);
+  color: var(--accent-color) !important;
+  font-weight: 500;
 }
 
 .menu-item.disabled {
@@ -158,11 +139,11 @@ body.dark ::-webkit-scrollbar-thumb {
 
 .menu-tag {
     color: white;
-    background-color: #ff8c4233;
+    background-color: rgba(59, 130, 246, 0.2);
     border-radius: 4px;
     margin-left: auto;
-    padding: 2px 6px;
-    font-size: 10px;
+    padding: 1px 4px;
+    font-size: 8px;
     font-weight: 700;
 }
 
@@ -199,7 +180,7 @@ body.dark .message-bot {
   border-radius: 24px;
   display: flex;
   align-items: center;
-  padding: 8px 16px;
+  padding: 6px 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
   margin-bottom: 8px;
   border: 1px solid var(--border-color);

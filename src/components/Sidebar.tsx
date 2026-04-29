@@ -11,6 +11,7 @@ import {
     HeartOutlined
 } from '@ant-design/icons';
 import { auth } from '../firebase';
+import { ToolsBanner } from './ToolsUI';
 
 interface SidebarProps {
     mobileMenuOpen: boolean;
@@ -51,7 +52,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 <div style={{ padding: '24px', display: 'flex', alignItems: 'center' }}>
                     <div
                         style={{
-                            background: '#ff8c42',
+                            background: 'rgba(255, 255, 255, 0.05)',
                             width: 32,
                             height: 32,
                             borderRadius: 8,
@@ -116,6 +117,10 @@ const Sidebar: React.FC<SidebarProps> = ({
                 </div>
 
                 <div style={{ flex: 1 }} />
+
+                <div style={{ padding: '0 16px', marginBottom: 16 }}>
+                    <ToolsBanner noBorder />
+                </div>
 
                 <div className="beta-card">
                     <div

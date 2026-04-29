@@ -11,8 +11,9 @@ import { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, getDoc
 import Settings from './Settings';
 import LoginModal from './LoginModal';
 import Sidebar from './Sidebar';
+import { ToolButtons } from './ToolsUI';
 import { SYSTEM_PROMPTS } from '../config/aiPersonality';
-import { generateToolsDescription } from '../config/aiTools';
+import { generateToolsDescription, AI_TOOLS } from '../config/aiTools';
 
 interface MessageData {
   id?: string;
@@ -159,7 +160,7 @@ const Chat: React.FC = () => {
       return;
     }
 
-    if (auth.currentUser) {
+    if (auth?.currentUser) {
       const q = query(
         collection(db, `users/${auth.currentUser.uid}/messages`),
         orderBy('timestamp', 'asc')
@@ -178,11 +179,13 @@ const Chat: React.FC = () => {
         }
 
         setTimeout(() => scrollToBottom(), 100);
+      }, (err) => {
+        console.warn("Firestore listener error (possibly mock db):", err);
       });
 
       return () => unsubscribe();
     }
-  }, [auth.currentUser, isDevMode, apiUrl, serverStatus]);
+  }, [auth?.currentUser, isDevMode, apiUrl, serverStatus]);
 
   useEffect(() => {
     scrollToBottom();
@@ -194,7 +197,7 @@ const Chat: React.FC = () => {
       hasGreeted.current = false;
       return;
     }
-    if (!auth.currentUser) return;
+    if (!auth?.currentUser || !db?.type) return; // Basic check if Firestore is real
 
     try {
       setLoading(true);
@@ -218,6 +221,20 @@ const Chat: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const handleToolClick = (toolName: string) => {
+    // Look up in AI_TOOLS record by the key (e.g. 'internet_search')
+    const tool = AI_TOOLS[toolName];
+    
+    if (tool) {
+      setInputValue(prev => {
+        const toolPrefix = `[Using Tool: ${tool.name}] `;
+        if (prev.startsWith(toolPrefix)) return prev;
+        return `${toolPrefix}${prev}`;
+      });
+      message.success(`Tool "${tool.name}" activated for this message.`);
+    }
+  };
+
   const attemptSendMessage = async () => {
     if (!inputValue.trim()) return;
 
@@ -235,12 +252,12 @@ const Chat: React.FC = () => {
     setLoading(true);
 
     try {
-      if (isDevMode || (!auth.currentUser && guestMessageCount < 2)) {
+      if (isDevMode || (!auth?.currentUser && guestMessageCount < 2)) {
         setMessages(prev => [...prev, { text: userMsg, sender: 'user', timestamp: new Date() }]);
-        if (!auth.currentUser && !isDevMode) {
+        if (!auth?.currentUser && !isDevMode) {
           setGuestMessageCount(prev => prev + 1);
         }
-      } else if (auth.currentUser) {
+      } else if (auth?.currentUser && db?.type) {
         const msgRef = collection(db, `users/${auth.currentUser.uid}/messages`);
         await addDoc(msgRef, {
           text: userMsg,
@@ -281,9 +298,9 @@ const Chat: React.FC = () => {
       const data = await response.json();
       const botResponse = data.message?.content || "I didn't understand that.";
 
-      if (isDevMode || (!auth.currentUser && guestMessageCount < 3)) { // Allow bot reply for guest
+      if (isDevMode || (!auth?.currentUser && guestMessageCount < 3)) { // Allow bot reply for guest
         setMessages(prev => [...prev, { text: botResponse, sender: 'bot', timestamp: new Date() }]);
-      } else if (auth.currentUser) {
+      } else if (auth?.currentUser && db?.type) {
         const msgRef = collection(db, `users/${auth.currentUser.uid}/messages`);
         await addDoc(msgRef, {
           text: botResponse,
@@ -294,9 +311,12 @@ const Chat: React.FC = () => {
 
     } catch (error: any) {
       console.error(error);
-      setServerStatus('error');
-      window.dispatchEvent(new CustomEvent('nanochat-server-error'));
-      message.error("Failed to connect to Ollama Server. Check Settings.");
+      // Only set error if it's truly a network error or server is down
+      if (error.name !== 'AbortError') {
+        setServerStatus('error');
+        window.dispatchEvent(new CustomEvent('nanochat-server-error'));
+      }
+      message.error("Failed to connect to server. contact admin.");
 
       if (isDevMode) {
         setMessages(prev => [...prev, { text: "Error connecting to model. Ensure server is running.", sender: 'bot', timestamp: new Date() }]);
@@ -376,8 +396,7 @@ const Chat: React.FC = () => {
 
         <div style={{ padding: '0 32px 24px 32px' }}>
           <div className="chat-input-container">
-            {/* <PaperClipOutlined style={{ fontSize: 20, color: 'var(--text-secondary)', marginRight: 16, cursor: 'pointer' }} />
-            <AudioOutlined style={{ fontSize: 20, color: 'var(--text-secondary)', marginRight: 16, cursor: 'pointer' }} /> */}
+            <ToolButtons onToolClick={handleToolClick} />
             <Input
               className="chat-input"
               placeholder="Start typing..."
@@ -423,7 +442,7 @@ const Chat: React.FC = () => {
           ))}
           {messages.length === 0 && <div style={{ color: 'var(--text-secondary)', fontSize: 13 }}>No recent history</div>}
         </div>
-        <div style={{ padding: 24, paddingBottom: 32 }}>
+        <div style={{ padding: 24, paddingBottom: 0 }}>
           <Button block icon={<DeleteOutlined />} style={{ color: 'var(--text-secondary)', borderColor: 'var(--border-color)' }} onClick={clearHistory}>
             Clear history
           </Button>

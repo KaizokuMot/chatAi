@@ -31,7 +31,11 @@ const App: React.FC = () => {
   // Auth listener
   useEffect(() => {
     console.log("App: Initializing auth listener...");
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    if (!auth || !auth.onAuthStateChanged) {
+      setAuthLoading(false);
+      return;
+    }
+    const unsubscribe = auth.onAuthStateChanged((user: any) => {
       console.log("App: Auth state changed. User:", user ? user.uid : "None");
       setAuthLoading(false);
     });
@@ -189,7 +193,7 @@ const App: React.FC = () => {
                       retryCount > 0 ? `${30 + retryCount * 25}%` : '40%',
                   background: serverStatus === 'error'
                     ? 'linear-gradient(90deg, #ff4d4f, #ff7875)'
-                    : 'linear-gradient(90deg, #ff8c42, #ffb347, #ff8c42)',
+                    : 'linear-gradient(90deg, #3b82f6, #60a5fa, #3b82f6)',
                   backgroundSize: '200% 100%',
                   animation: serverStatus !== 'online' && serverStatus !== 'error'
                     ? 'shimmer 1.5s ease-in-out infinite' : 'none',
@@ -232,7 +236,7 @@ const App: React.FC = () => {
                   For more info, reach out at{' '}
                   <a
                     href="mailto:dixontheworldvsy@gmail.com"
-                    style={{ color: '#ff8c42', textDecoration: 'none' }}
+                    style={{ color: '#3b82f6', textDecoration: 'none' }}
                   >
                     dixontheworldvsy@gmail.com
                   </a>
@@ -245,7 +249,10 @@ const App: React.FC = () => {
                       fontSize: 12, cursor: 'pointer', transition: 'all 0.2s',
                       display: 'flex', alignItems: 'center', gap: 6,
                     }}
-                    onClick={() => setBlockerDismissed(true)}
+                    onClick={() => {
+                      setServerStatus('online');
+                      setBlockerDismissed(true);
+                    }}
                   >
                     Proceed Anyway
                   </button>
@@ -298,7 +305,7 @@ const StatusStep: React.FC<{ label: string; status: 'loading' | 'done' | 'error'
     }}>
       {status === 'done' && <CheckCircleFilled style={{ color: '#52c41a', fontSize: 16 }} />}
       {status === 'error' && <CloseCircleFilled style={{ color: '#ff4d4f', fontSize: 16 }} />}
-      {status === 'loading' && <LoadingOutlined style={{ color: '#ff8c42', fontSize: 16 }} spin />}
+      {status === 'loading' && <LoadingOutlined style={{ color: '#3b82f6', fontSize: 16 }} spin />}
     </div>
     <span style={{
       fontSize: 13, fontWeight: 500,
@@ -336,10 +343,10 @@ const logoContainerStyle: React.CSSProperties = {
 
 const logoOrbStyle: React.CSSProperties = {
   width: 64, height: 64, borderRadius: '50%',
-  background: 'linear-gradient(135deg, #ff8c42 0%, #ffb347 50%, #ff6b35 100%)',
+  background: 'linear-gradient(135deg, #3b82f6 0%, #60a5fa 50%, #2563eb 100%)',
   display: 'flex', alignItems: 'center', justifyContent: 'center',
   animation: 'pulse-orb 2s ease-in-out infinite',
-  boxShadow: '0 0 40px rgba(255, 140, 66, 0.3), 0 0 80px rgba(255, 140, 66, 0.1)',
+  boxShadow: '0 0 40px rgba(59, 130, 246, 0.3), 0 0 80px rgba(59, 130, 246, 0.1)',
 };
 
 const orbInnerStyle: React.CSSProperties = {
@@ -390,7 +397,7 @@ const errorActionsStyle: React.CSSProperties = {
 
 const retryBtnStyle: React.CSSProperties = {
   padding: '8px 20px', borderRadius: 10, border: 'none',
-  background: 'linear-gradient(135deg, #ff8c42, #ff6b35)',
+  background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
   color: '#fff', fontSize: 13, fontWeight: 600,
   cursor: 'pointer', transition: 'transform 0.2s',
   display: 'flex', alignItems: 'center',
