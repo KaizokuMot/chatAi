@@ -206,7 +206,7 @@ const App: React.FC = () => {
                   fontSize: 12, color: 'rgba(255,255,255,0.55)',
                   lineHeight: 1.7, margin: '0 0 8px', textAlign: 'center',
                 }}>
-                  We run on a tight budget and sometimes our servers
+                  We run on a tight budget and sometimes we
                   are unable to serve the model. Please try again later.
                 </p>
                 <p style={{
