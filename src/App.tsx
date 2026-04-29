@@ -61,7 +61,7 @@ const App: React.FC = () => {
 
       if (!apiUrl || apiUrl === 'undefined' || apiUrl === 'null') {
         setServerStatus('error');
-        setStatusMessage('No AI server configured');
+        setStatusMessage('No AI mode found!');
         return;
       }
 
