@@ -17,20 +17,29 @@ const firebaseConfig = {
 
 // Initialize Firebase
 console.log("Firebase: Initializing app...");
-let app;
 let auth: any;
 let db: any;
 
 try {
-  app = initializeApp(firebaseConfig);
+  const app = initializeApp(firebaseConfig);
   auth = getAuth(app);
   db = getFirestore(app);
   console.log("Firebase: Initialized successfully.");
 } catch (error) {
   console.error("Firebase: Initialization failed (check API key):", error);
-  // Provide mock objects so the app doesn't crash
-  auth = { onAuthStateChanged: (cb: any) => { cb(null); return () => {}; }, signOut: () => Promise.resolve() };
-  db = {}; 
+  // Provide robust mock objects so the app doesn't crash
+  auth = { 
+    onAuthStateChanged: (cb: any) => { 
+      // Trigger callback with null user immediately
+      setTimeout(() => cb(null), 0);
+      return () => {}; 
+    }, 
+    signOut: () => Promise.resolve(),
+    currentUser: null
+  };
+  db = {
+    type: 'mock'
+  }; 
 }
 
 export { auth, db };

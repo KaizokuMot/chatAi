@@ -8,13 +8,14 @@ import {
   GlobalOutlined,
   BarChartOutlined,
   ThunderboltOutlined,
+  ClockCircleOutlined
 } from '@ant-design/icons';
-import { Tooltip, message } from 'antd';
+import { Tooltip } from 'antd';
 import { getEnabledTools } from '../config/aiTools';
 
-interface ToolButtonsProps {
-  onToolClick?: (toolName: string) => void;
-}
+// interface ToolButtonsProps {
+//   onToolClick?: (toolName: string) => void;
+// }
 
 // Map tool names to icons
 const TOOL_ICONS: Record<string, React.ReactNode> = {
@@ -22,33 +23,21 @@ const TOOL_ICONS: Record<string, React.ReactNode> = {
   web_browse: <GlobalOutlined />,
   document_analysis: <FileTextOutlined />,
   image_analysis: <PictureOutlined />,
-  text_analysis: <BarsOutlined />,
-  current_date_time: <CalendarOutlined />,
-  calendar_aware: <CalendarOutlined />,
-  data_synthesis: <BarChartOutlined />,
-  research_compilation: <BarChartOutlined />,
+
 };
 
 /**
- * Tool Button for Input Area
- * Shows compact icons that users can click to enable specific tools
+ * Tool Indicators for Input Area
+ * Shows which capabilities are currently active and used automatically by the AI
  */
-export const ToolButtons: React.FC<ToolButtonsProps> = ({ onToolClick }) => {
+export const ToolButtons: React.FC = () => {
   const enabledTools = getEnabledTools();
   const mainTools = enabledTools.slice(0, 5); // Show top 5
-
-  const handleClick = (toolName: string) => {
-    if (onToolClick) {
-      onToolClick(toolName);
-    } else {
-      message.info(`Tool "${toolName}" is active and used by Nano automatically.`);
-    }
-  };
 
   return (
     <div style={{ display: 'flex', gap: 4, alignItems: 'center', marginRight: 8 }}>
       {mainTools.map(tool => (
-        <Tooltip key={tool.name} title={`${tool.name.split('_').join(' ')} (Active)`} placement="top">
+        <Tooltip key={tool.name} title={`${tool.name.split('_').join(' ')} (Active Automatically)`} placement="top">
           <div
             style={{
               width: 28,
@@ -58,21 +47,12 @@ export const ToolButtons: React.FC<ToolButtonsProps> = ({ onToolClick }) => {
               alignItems: 'center',
               justifyContent: 'center',
               color: 'var(--text-secondary)',
-              cursor: 'pointer',
               transition: 'all 0.2s',
               fontSize: 14,
-            }}
-            onClick={() => handleClick(tool.name)}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
-              e.currentTarget.style.color = 'var(--text-primary)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent';
-              e.currentTarget.style.color = 'var(--text-secondary)';
+              opacity: 0.7
             }}
           >
-            {TOOL_ICONS[tool.name] || <ThunderboltOutlined />}
+            {TOOL_ICONS[tool.id || ''] || <ThunderboltOutlined />}
           </div>
         </Tooltip>
       ))}
@@ -95,7 +75,7 @@ export const ToolsBanner: React.FC<{ noBorder?: boolean }> = ({ noBorder }) => {
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-        <span style={{ fontWeight: 600, fontSize: 11, color: 'var(--text-secondary)', letterSpacing: '0.5px' }}>CAPABILITIES</span>
+        <span style={{ fontWeight: 600, fontSize: 11, color: 'var(--text-secondary)', letterSpacing: '0.5px' }}>New Features</span>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -142,7 +122,7 @@ export const ToolsList: React.FC = () => {
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
               <div style={{ fontSize: 20, color: 'var(--text-main)' }}>
-                {TOOL_ICONS[tool.name] || <ThunderboltOutlined />}
+                {TOOL_ICONS[tool.id || ''] || <ThunderboltOutlined />}
               </div>
               <div>
                 <div style={{ fontWeight: 600, fontSize: 13 }}>

@@ -52,7 +52,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 <div style={{ padding: '24px', display: 'flex', alignItems: 'center' }}>
                     <div
                         style={{
-                            background: 'rgba(255, 255, 255, 0.05)',
+                            background: '#ff8c42',
                             width: 32,
                             height: 32,
                             borderRadius: 8,
@@ -137,7 +137,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     >
                         <RobotOutlined style={{ fontSize: 18 }} />
                     </div>
-                    <h3 style={{ margin: '0 0 2px 0', fontSize: 10 }}>beta v.14.2</h3>
+                    <h3 style={{ margin: '0 0 2px 0', fontSize: 10 }}>beta v.15.2</h3>
                     <p style={{ margin: 0, fontSize: 10, opacity: 0.6 }}>
                         Kalanzi Dixon & Katungi Emma
                     </p>

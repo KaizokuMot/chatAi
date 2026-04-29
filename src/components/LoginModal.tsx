@@ -81,10 +81,9 @@ const LoginModal: React.FC<LoginModalProps> = ({ visible, onClose, onSuccess }) 
     >
         <div style={{ textAlign: 'left', marginBottom: 24 }}>
           <div className='login-title'>    
-                <div style={{ background: 'rgba(59, 130, 246, 0.1)', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
-                <RobotOutlined style={{ color: 'var(--accent-color)', fontSize: 16 }} />
+                <div style={{ background: '#ff8c42', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+                <RobotOutlined style={{ color: '#fff', fontSize: 16 }} />
                 </div>
-
                                <h1 className='app_name'>NanoChat</h1>
 
                      </div>

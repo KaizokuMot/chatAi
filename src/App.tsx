@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebase';
 import { CheckCircleFilled, CloseCircleFilled, LoadingOutlined, ReloadOutlined } from '@ant-design/icons';
 import Chat from './components/Chat';
@@ -16,7 +15,25 @@ const App: React.FC = () => {
   const [retryCount, setRetryCount] = useState(0);
   const [connError, setConnError] = useState(false);
   const [blockerDismissed, setBlockerDismissed] = useState(false);
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
   const isDevMode = localStorage.getItem('devMode') === 'true';
+
+  useEffect(() => {
+    if (darkMode) {
+      document.body.classList.add('dark');
+    } else {
+      document.body.classList.remove('dark');
+    }
+  }, [darkMode]);
+
+  // Listen for dark mode changes from other components
+  useEffect(() => {
+    const handleDarkModeChange = (e: any) => {
+      setDarkMode(e.detail);
+    };
+    window.addEventListener('darkModeChanged', handleDarkModeChange);
+    return () => window.removeEventListener('darkModeChanged', handleDarkModeChange);
+  }, []);
 
   // Listen for CONN ERROR events from child components
   useEffect(() => {
@@ -58,7 +75,7 @@ const App: React.FC = () => {
   // Server health check
   useEffect(() => {
     let cancelled = false;
-    const apiUrl = localStorage.getItem('apiUrl') || import.meta.env.VITE_OLLAMA_ENDPOINT;
+    const apiUrl = localStorage.getItem('apiUrl') || import.meta.env.VITE_OLLAMA_ENDPOINT || 'https://necessitative-freeda-serologically.ngrok-free.dev';
 
     const checkHealth = async (attempt: number) => {
       if (cancelled) return;
@@ -116,7 +133,7 @@ const App: React.FC = () => {
     setServerStatus('checking');
     setStatusMessage('Reconnecting...');
 
-    const apiUrl = localStorage.getItem('apiUrl') || import.meta.env.VITE_OLLAMA_ENDPOINT;
+    const apiUrl = localStorage.getItem('apiUrl') || import.meta.env.VITE_OLLAMA_ENDPOINT || 'https://necessitative-freeda-serologically.ngrok-free.dev';
     const baseUrl = apiUrl?.replace(/\/api\/chat$/, '') || '';
     const healthUrl = `${baseUrl}/api/health`;
 
@@ -151,7 +168,12 @@ const App: React.FC = () => {
 
       {/* Blocking overlay on top of the app */}
       {showBlocker && (
-        <div style={overlayStyle}>
+        <div style={{
+          ...overlayStyle,
+          background: darkMode ? 'rgba(11, 12, 16, 0.98)' : 'rgba(255, 255, 255, 0.98)',
+          backdropFilter: 'blur(30px)',
+          WebkitBackdropFilter: 'blur(30px)',
+        }}>
           <div style={dialogStyle}>
             {/* Animated logo */}
             <div style={logoContainerStyle}>
@@ -160,14 +182,15 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            <h1 style={titleStyle}>Nanochat</h1>
-            <p style={subtitleStyle}>Firing on all pistons...</p>
+            <h1 style={{ ...titleStyle, color: darkMode ? '#ffffff' : '#111827' }}>Nanochat</h1>
+            <p style={{ ...subtitleStyle, color: darkMode ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)' }}>Firing on all pistons...</p>
 
             {/* Status steps */}
             <div style={stepsContainerStyle}>
               <StatusStep
                 label="Authentication"
                 status={authLoading ? 'loading' : 'done'}
+                darkMode={darkMode}
               />
               <StatusStep
                 label="AI Server"
@@ -178,10 +201,11 @@ const App: React.FC = () => {
                       ? 'done'
                       : 'error'
                 }
+                darkMode={darkMode}
               />
             </div>
 
-            <p style={messageStyle}>{statusMessage}</p>
+            <p style={{ ...messageStyle, color: darkMode ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.5)' }}>{statusMessage}</p>
 
             {/* Progress bar */}
             <div style={progressTrackStyle}>
@@ -193,7 +217,7 @@ const App: React.FC = () => {
                       retryCount > 0 ? `${30 + retryCount * 25}%` : '40%',
                   background: serverStatus === 'error'
                     ? 'linear-gradient(90deg, #ff4d4f, #ff7875)'
-                    : 'linear-gradient(90deg, #3b82f6, #60a5fa, #3b82f6)',
+                    : 'linear-gradient(90deg, #ff8c42, #ffb347, #ff8c42)',
                   backgroundSize: '200% 100%',
                   animation: serverStatus !== 'online' && serverStatus !== 'error'
                     ? 'shimmer 1.5s ease-in-out infinite' : 'none',
@@ -236,7 +260,7 @@ const App: React.FC = () => {
                   For more info, reach out at{' '}
                   <a
                     href="mailto:dixontheworldvsy@gmail.com"
-                    style={{ color: '#3b82f6', textDecoration: 'none' }}
+                    style={{ color: '#ff8c42', textDecoration: 'none' }}
                   >
                     dixontheworldvsy@gmail.com
                   </a>
@@ -295,7 +319,7 @@ const App: React.FC = () => {
 
 /* --- Sub-component --- */
 
-const StatusStep: React.FC<{ label: string; status: 'loading' | 'done' | 'error' }> = ({ label, status }) => (
+const StatusStep: React.FC<{ label: string; status: 'loading' | 'done' | 'error'; darkMode: boolean }> = ({ label, status, darkMode }) => (
   <div style={stepRowStyle}>
     <div style={{
       width: 22, height: 22,
@@ -305,12 +329,12 @@ const StatusStep: React.FC<{ label: string; status: 'loading' | 'done' | 'error'
     }}>
       {status === 'done' && <CheckCircleFilled style={{ color: '#52c41a', fontSize: 16 }} />}
       {status === 'error' && <CloseCircleFilled style={{ color: '#ff4d4f', fontSize: 16 }} />}
-      {status === 'loading' && <LoadingOutlined style={{ color: '#3b82f6', fontSize: 16 }} spin />}
+      {status === 'loading' && <LoadingOutlined style={{ color: '#ff8c42', fontSize: 16 }} spin />}
     </div>
     <span style={{
       fontSize: 13, fontWeight: 500,
-      color: status === 'done' ? 'rgba(255,255,255,0.9)' :
-        status === 'error' ? '#ff7875' : 'rgba(255,255,255,0.5)',
+      color: status === 'done' ? (darkMode ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)') :
+        status === 'error' ? '#ff7875' : (darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'),
       transition: 'color 0.4s ease',
     }}>
       {label}
@@ -343,10 +367,10 @@ const logoContainerStyle: React.CSSProperties = {
 
 const logoOrbStyle: React.CSSProperties = {
   width: 64, height: 64, borderRadius: '50%',
-  background: 'linear-gradient(135deg, #3b82f6 0%, #60a5fa 50%, #2563eb 100%)',
+  background: 'linear-gradient(135deg, #ff8c42 0%, #ffb347 50%, #ff6b35 100%)',
   display: 'flex', alignItems: 'center', justifyContent: 'center',
   animation: 'pulse-orb 2s ease-in-out infinite',
-  boxShadow: '0 0 40px rgba(59, 130, 246, 0.3), 0 0 80px rgba(59, 130, 246, 0.1)',
+  boxShadow: '0 0 40px rgba(255, 140, 66, 0.3), 0 0 80px rgba(255, 140, 66, 0.1)',
 };
 
 const orbInnerStyle: React.CSSProperties = {
@@ -397,7 +421,7 @@ const errorActionsStyle: React.CSSProperties = {
 
 const retryBtnStyle: React.CSSProperties = {
   padding: '8px 20px', borderRadius: 10, border: 'none',
-  background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+  background: 'linear-gradient(135deg, #ff8c42, #ff6b35)',
   color: '#fff', fontSize: 13, fontWeight: 600,
   cursor: 'pointer', transition: 'transform 0.2s',
   display: 'flex', alignItems: 'center',

@@ -2,10 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Input, Button, Spin, Checkbox, message } from 'antd';
 import {
   SendOutlined, RobotOutlined,
-  
   DeleteOutlined,
-  MenuFoldOutlined
+  MenuFoldOutlined,
+  PaperClipOutlined
 } from '@ant-design/icons';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { auth, db } from '../firebase';
 import { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, getDocs, deleteDoc, doc } from 'firebase/firestore';
 import Settings from './Settings';
@@ -29,6 +31,7 @@ const Chat: React.FC = () => {
   const [settingsVisible, setSettingsVisible] = useState(false);
   const [loginModalVisible, setLoginModalVisible] = useState(false);
   const [guestMessageCount, setGuestMessageCount] = useState(0);
+  const [userMessageCount, setUserMessageCount] = useState(0);
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [apiUrl, setApiUrl] = useState(() => {
@@ -48,6 +51,7 @@ const Chat: React.FC = () => {
       document.body.classList.remove('dark');
       localStorage.setItem('darkMode', 'false');
     }
+    window.dispatchEvent(new CustomEvent('darkModeChanged', { detail: darkMode }));
   }, [darkMode]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -221,29 +225,30 @@ const Chat: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const handleToolClick = (toolName: string) => {
-    // Look up in AI_TOOLS record by the key (e.g. 'internet_search')
-    const tool = AI_TOOLS[toolName];
-    
-    if (tool) {
-      setInputValue(prev => {
-        const toolPrefix = `[Using Tool: ${tool.name}] `;
-        if (prev.startsWith(toolPrefix)) return prev;
-        return `${toolPrefix}${prev}`;
-      });
-      message.success(`Tool "${tool.name}" activated for this message.`);
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      message.success(`File "${file.name}" attached. AI will analyze it.`);
+      setInputValue(prev => `${prev} [Attached Document: ${file.name}] `);
     }
   };
 
   const attemptSendMessage = async () => {
     if (!inputValue.trim()) return;
 
-    // Auth Guard: Show Login modal if not authenticated and message limit reached
-    if (!auth.currentUser && !isDevMode) {
-      if (guestMessageCount >= 2) {
-        setLoginModalVisible(true);
-        message.info("Please log in to continue chatting!");
-        return;
+    // Rate Limiting
+    if (!isDevMode) {
+      if (!auth.currentUser) {
+        if (guestMessageCount >= 3) {
+          setLoginModalVisible(true);
+          message.info("Guest limit reached. Please log in to continue!");
+          return;
+        }
+      } else {
+        if (userMessageCount >= 10) {
+          message.warning("Daily message limit reached for your account.");
+          return;
+        }
       }
     }
 
@@ -252,18 +257,23 @@ const Chat: React.FC = () => {
     setLoading(true);
 
     try {
-      if (isDevMode || (!auth?.currentUser && guestMessageCount < 2)) {
+      if (isDevMode || (!auth?.currentUser && guestMessageCount < 3)) {
         setMessages(prev => [...prev, { text: userMsg, sender: 'user', timestamp: new Date() }]);
         if (!auth?.currentUser && !isDevMode) {
           setGuestMessageCount(prev => prev + 1);
         }
-      } else if (auth?.currentUser && db?.type) {
-        const msgRef = collection(db, `users/${auth.currentUser.uid}/messages`);
-        await addDoc(msgRef, {
-          text: userMsg,
-          sender: 'user',
-          timestamp: serverTimestamp()
-        });
+      } else if (auth?.currentUser) {
+        setUserMessageCount(prev => prev + 1);
+        if (db?.type !== 'mock') {
+          const msgRef = collection(db, `users/${auth.currentUser.uid}/messages`);
+          await addDoc(msgRef, {
+            text: userMsg,
+            sender: 'user',
+            timestamp: serverTimestamp()
+          });
+        } else {
+          setMessages(prev => [...prev, { text: userMsg, sender: 'user', timestamp: new Date() }]);
+        }
       }
 
       const currentHistory = messages.map(m => ({
@@ -273,10 +283,11 @@ const Chat: React.FC = () => {
       const modelName = localStorage.getItem('modelName') || 'gemma3:1b';
       const systemPrompt = SYSTEM_PROMPTS.GENERAL + '\n' + generateToolsDescription();
 
-      const response = await fetch(apiUrl, {
+      const response = await fetch(apiUrl.endsWith('/api/chat') ? apiUrl : `${apiUrl}/api/chat`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true'
         },
         body: JSON.stringify({
           model: modelName,
@@ -379,9 +390,11 @@ const Chat: React.FC = () => {
                     </div>
                     <strong style={{ fontSize: 16 }}>Nano</strong>
                   </div>
-                  <div style={{ fontSize: "small", whiteSpace: 'pre-wrap', lineHeight: 1.6, color: 'var(--text-main)' }}>
-                    {item.text}
-                  </div>
+                    <div className="markdown-content" style={{ fontSize: "small", lineHeight: 1.6, color: 'var(--text-main)' }}>
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {item.text}
+                      </ReactMarkdown>
+                    </div>
                 </div>
               )}
             </div>
@@ -396,7 +409,19 @@ const Chat: React.FC = () => {
 
         <div style={{ padding: '0 32px 24px 32px' }}>
           <div className="chat-input-container">
-            <ToolButtons onToolClick={handleToolClick} />
+            {/* ToolButtons hidden as they are automatic */}
+            <div style={{ display: 'flex', alignItems: 'center', marginLeft: 8, marginRight: 12 }}>
+              <input
+                type="file"
+                id="file-upload"
+                style={{ display: 'none' }}
+                onChange={handleFileUpload}
+              />
+              <PaperClipOutlined 
+                style={{ fontSize: 18, color: 'var(--text-secondary)', cursor: 'pointer' }} 
+                onClick={() => document.getElementById('file-upload')?.click()}
+              />
+            </div>
             <Input
               className="chat-input"
               placeholder="Start typing..."
