@@ -20,7 +20,6 @@ const App: React.FC = () => {
   // Listen for CONN ERROR events from child components
   useEffect(() => {
     const handleServerError = () => {
-      setConnError(true);
       setServerStatus('error');
       setStatusMessage('Connection lost to AI server');
     };
@@ -132,10 +131,6 @@ const App: React.FC = () => {
         setServerStatus('error');
         setStatusMessage('Unable to reach AI server');
       });
-  };
-
-  const handleReload = () => {
-    window.location.reload();
   };
 
   return (
@@ -370,15 +365,6 @@ const retryBtnStyle: React.CSSProperties = {
   background: 'linear-gradient(135deg, #ff8c42, #ff6b35)',
   color: '#fff', fontSize: 13, fontWeight: 600,
   cursor: 'pointer', transition: 'transform 0.2s',
-  display: 'flex', alignItems: 'center',
-};
-
-const skipBtnStyle: React.CSSProperties = {
-  padding: '8px 20px', borderRadius: 10,
-  border: '1px solid rgba(255,255,255,0.12)',
-  background: 'transparent', color: 'rgba(255,255,255,0.5)',
-  fontSize: 13, fontWeight: 500, cursor: 'pointer',
-  transition: 'all 0.2s',
   display: 'flex', alignItems: 'center',
 };
 
