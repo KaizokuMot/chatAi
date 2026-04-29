@@ -3,12 +3,8 @@ import {
   SearchOutlined,
   FileTextOutlined,
   PictureOutlined,
-  BarsOutlined,
-  CalendarOutlined,
   GlobalOutlined,
-  BarChartOutlined,
   ThunderboltOutlined,
-  ClockCircleOutlined
 } from '@ant-design/icons';
 import { Tooltip } from 'antd';
 import { getEnabledTools } from '../config/aiTools';
