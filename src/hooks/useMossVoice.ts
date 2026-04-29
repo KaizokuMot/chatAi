@@ -13,7 +13,8 @@ export function useMossVoice() {
 
     try {
       // Connect to your ngrok or Gradio exposed URL
-      const app = await Client.connect("https://8ac6-102-86-13-172.ngrok-free.app", {
+      const gradioUrl = import.meta.env.VITE_GRADIO_ENDPOINT || "https://8ac6-102-86-13-172.ngrok-free.app";
+      const app = await Client.connect(gradioUrl, {
         headers: { "ngrok-skip-browser-warning": "true" }
       });
       const submission = app.submit("/_on_generate", [
@@ -48,17 +49,32 @@ export function useMossVoice() {
 
             // Fallback for Gradio 4+ if it returns `.path` instead of auto-resolving `.url`
             if (!audioUrl && audioData?.path) {
-              audioUrl = `https://f09f-102-86-13-172.ngrok-free.app/file=${audioData.path}`;
+              const gradioUrl = import.meta.env.VITE_GRADIO_ENDPOINT || "https://8ac6-102-86-13-172.ngrok-free.app";
+              audioUrl = `${gradioUrl}/file=${audioData.path}`;
             }
 
             if (audioUrl) {
               setEngineStatus("playing audio...");
               const audio = new Audio(audioUrl);
+              
+              audio.onerror = () => {
+                console.error("Audio playback error for URL:", audioUrl);
+                setEngineStatus('audio playback failed - try again');
+                setIsSpeaking(false);
+              };
+              
               audio.onended = () => {
                 setIsSpeaking(false);
                 setEngineStatus('idle');
               };
-              await audio.play();
+              
+              try {
+                await audio.play();
+              } catch (playError) {
+                console.error("Audio play() rejected:", playError);
+                setEngineStatus('audio playback blocked - check browser permissions');
+                setIsSpeaking(false);
+              }
             }
           }
           // Note: We DO NOT throw an error if audioData is null, because intermediate streaming events will naturally have null audio until the final chunk.
