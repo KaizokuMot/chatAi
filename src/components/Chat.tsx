@@ -13,9 +13,8 @@ import { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, getDoc
 import Settings from './Settings';
 import LoginModal from './LoginModal';
 import Sidebar from './Sidebar';
-import { ToolButtons } from './ToolsUI';
 import { SYSTEM_PROMPTS } from '../config/aiPersonality';
-import { generateToolsDescription, AI_TOOLS } from '../config/aiTools';
+import { generateToolsDescription } from '../config/aiTools';
 
 interface MessageData {
   id?: string;
