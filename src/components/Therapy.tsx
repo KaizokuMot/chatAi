@@ -323,11 +323,11 @@ const Therapy: React.FC = () => {
         <div className="hero-input-overlay" style={{ border: 'none', background: 'transparent', pointerEvents: 'none' }}>
           <div className={`orb-label ${isListening ? 'listening-active' : ''}`} style={{ fontSize: 10, color: isListening ? '#00ffcc' : 'rgba(255,255,255,0.4)', textAlign: 'center' }}>
             {isListening && !interimTranscript
-              ? 'Ruth is listening...'
+              ? 'Listening...'
               : isSpeaking
                 ? engineStatus
                 : isGenerating
-                  ? 'Ruth is thinking...'
+                  ? 'Thinking...'
                   : 'a ghost in the shell...'}
           </div>
         </div>
