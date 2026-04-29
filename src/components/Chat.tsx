@@ -327,7 +327,6 @@ const Chat: React.FC = () => {
         <div style={{ padding: '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-topbar)', borderBottom: '1px solid var(--border-color)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <Button icon={<MenuFoldOutlined />} onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="mobile-only-btn" style={{ display: 'none' }} />
-            <div style={{ fontWeight: 600, fontSize: 18 }}>Nanochat</div>
             <div style={{ marginLeft: 8, display: 'flex', alignItems: 'center' }}>
               {serverStatus === 'checking' && <Spin size="small" />}
               {serverStatus === 'online' && <span style={{ fontSize: 10, color: '#52c41a', background: 'rgba(82, 196, 26, 0.1)', padding: '2px 6px', borderRadius: 4 }}>ONLINE</span>}

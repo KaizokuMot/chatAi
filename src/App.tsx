@@ -15,6 +15,7 @@ const App: React.FC = () => {
   const [statusMessage, setStatusMessage] = useState('Initializing...');
   const [retryCount, setRetryCount] = useState(0);
   const [connError, setConnError] = useState(false);
+  const [blockerDismissed, setBlockerDismissed] = useState(false);
   const isDevMode = localStorage.getItem('devMode') === 'true';
 
   // Listen for CONN ERROR events from child components
@@ -103,6 +104,7 @@ const App: React.FC = () => {
   }, []);
 
   const isSystemReady = !authLoading && serverStatus === 'online';
+  const showBlocker = !isSystemReady && !blockerDismissed;
 
   const handleRetry = () => {
     setRetryCount(0);
@@ -144,7 +146,7 @@ const App: React.FC = () => {
       </Router>
 
       {/* Blocking overlay on top of the app */}
-      {!isSystemReady && (
+      {showBlocker && (
         <div style={overlayStyle}>
           <div style={dialogStyle}>
             {/* Animated logo */}
@@ -195,6 +197,24 @@ const App: React.FC = () => {
               />
             </div>
 
+            {serverStatus === 'online' && !authLoading && (
+              <div style={{ marginTop: 20, textAlign: 'center' }}>
+                <div style={{
+                  fontSize: 13, color: '#52c41a', fontWeight: 600,
+                  margin: '0 0 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                }}>
+                  <CheckCircleFilled style={{ fontSize: 18 }} />
+                  Model loaded and ready!
+                </div>
+                <button
+                  style={{ ...retryBtnStyle, background: 'linear-gradient(135deg, #52c41a, #73d13d)' }}
+                  onClick={() => setBlockerDismissed(true)}
+                >
+                  Proceed to Chat
+                </button>
+              </div>
+            )}
+
             {serverStatus === 'error' && (
               <div style={{ marginTop: 20 }}>
                 <p style={{
@@ -218,10 +238,17 @@ const App: React.FC = () => {
                   </a>
                 </p>
                 <div style={errorActionsStyle}>
-                  {/* <button style={retryBtnStyle} onClick={handleReload}>
-                    <ReloadOutlined style={{ marginRight: 6 }} />
-                    Refresh
-                  </button> */}
+                  <button
+                    style={{
+                      padding: '8px 16px', borderRadius: 8, border: 'none',
+                      background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)',
+                      fontSize: 12, cursor: 'pointer', transition: 'all 0.2s',
+                      display: 'flex', alignItems: 'center', gap: 6,
+                    }}
+                    onClick={() => setBlockerDismissed(true)}
+                  >
+                    Proceed Anyway
+                  </button>
                   <button style={{ ...retryBtnStyle, background: 'rgba(255,255,255,0.08)' }} onClick={handleRetry}>
                     <ReloadOutlined style={{ marginRight: 6 }} />
                     Retry Connection
