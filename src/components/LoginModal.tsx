@@ -84,7 +84,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ visible, onClose, onSuccess }) 
                 <div style={{ background: '#ff8c42', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
                        <RobotOutlined style={{ color: '#fff', fontSize: 16 }} />
                      </div>
-                               <h1 className='app_name'>ChatAi</h1>
+                               <h1 className='app_name'>NanoChat</h1>
 
                      </div>
           <Text style={{textAlign:"left"}} type="secondary">{isSignUp ? 'Create a new account' : 'Sign in to continue chatting'}</Text>

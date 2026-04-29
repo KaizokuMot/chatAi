@@ -69,7 +69,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                         style={{ margin: 0, fontSize: 18, color: '#fff', cursor: 'pointer' }}
                         onClick={() => navigate('/')}
                     >
-                        ChatAi
+                        {/* NanoChat */}
                     </h2>
                 </div>
 
@@ -81,7 +81,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                             setMobileMenuOpen(false);
                         }}
                     >
-                        <RobotOutlined /> <span style={{ marginLeft: 12 }}>ChatAi</span>
+                        <RobotOutlined /> <span style={{ marginLeft: 12 }}>NanoChat</span>
                     </div>
 
                     {/* Therapy Sessions - New Option */}
@@ -132,7 +132,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     >
                         <RobotOutlined style={{ fontSize: 18 }} />
                     </div>
-                    <h3 style={{ margin: '0 0 2px 0', fontSize: 10 }}>beta v.10.2</h3>
+                    <h3 style={{ margin: '0 0 2px 0', fontSize: 10 }}>beta v.14.2</h3>
                     <p style={{ margin: 0, fontSize: 10, opacity: 0.6 }}>
                         Kalanzi Dixon & Katungi Emma
                     </p>

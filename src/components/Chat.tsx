@@ -52,6 +52,11 @@ const Chat: React.FC = () => {
   const hasGreeted = useRef(false);
 
   const checkServerHealth = async () => {
+    if (!apiUrl) {
+      setServerStatus('error');
+      window.dispatchEvent(new CustomEvent('nanochat-server-error'));
+      return false;
+    }
     setServerStatus('checking');
     try {
       // Base URL from /api/chat
@@ -75,13 +80,15 @@ const Chat: React.FC = () => {
         }
         return true;
       } else {
-        // Fallback for 404 or other issues
-        setServerStatus('online');
-        return true;
+        // Non-OK response means server isn't healthy
+        setServerStatus('error');
+        window.dispatchEvent(new CustomEvent('nanochat-server-error'));
+        return false;
       }
     } catch (e) {
       console.error("Health check failed:", e);
       setServerStatus('error');
+      window.dispatchEvent(new CustomEvent('nanochat-server-error'));
       return false;
     }
   };
@@ -132,7 +139,7 @@ const Chat: React.FC = () => {
     } catch (e) {
       console.error(e);
       if (isDevMode) {
-        setMessages([{ id: 'mock-1', text: 'Welcome to chatAI Beta! Test the local model response.', sender: 'bot', timestamp: new Date() }]);
+        setMessages([{ id: 'mock-1', text: 'Welcome to Nanochat Beta! Test the local model response.', sender: 'bot', timestamp: new Date() }]);
       }
     } finally {
       setLoading(false);
@@ -282,6 +289,7 @@ const Chat: React.FC = () => {
     } catch (error: any) {
       console.error(error);
       setServerStatus('error');
+      window.dispatchEvent(new CustomEvent('nanochat-server-error'));
       message.error("Failed to connect to Ollama Server. Check Settings.");
 
       if (isDevMode) {
@@ -319,7 +327,7 @@ const Chat: React.FC = () => {
         <div style={{ padding: '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-topbar)', borderBottom: '1px solid var(--border-color)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <Button icon={<MenuFoldOutlined />} onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="mobile-only-btn" style={{ display: 'none' }} />
-            <div style={{ fontWeight: 600, fontSize: 18 }}>ChatAi</div>
+            <div style={{ fontWeight: 600, fontSize: 18 }}>Nanochat</div>
             <div style={{ marginLeft: 8, display: 'flex', alignItems: 'center' }}>
               {serverStatus === 'checking' && <Spin size="small" />}
               {serverStatus === 'online' && <span style={{ fontSize: 10, color: '#52c41a', background: 'rgba(82, 196, 26, 0.1)', padding: '2px 6px', borderRadius: 4 }}>ONLINE</span>}
@@ -344,7 +352,7 @@ const Chat: React.FC = () => {
                     <div style={{ background: '#181a1b', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
                       <RobotOutlined style={{ color: '#fff', fontSize: 16 }} />
                     </div>
-                    <strong style={{ fontSize: 16 }}>chatAI</strong>
+                    <strong style={{ fontSize: 16 }}>Nano</strong>
                   </div>
                   <div style={{ fontSize: "small", whiteSpace: 'pre-wrap', lineHeight: 1.6, color: 'var(--text-main)' }}>
                     {item.text}
@@ -383,7 +391,7 @@ const Chat: React.FC = () => {
             />
           </div>
           <div style={{ textAlign: 'center', fontSize: 12, color: 'var(--text-secondary)', marginTop: 8 }}>
-            Free Research Preview. chatAI may produce inaccurate information about people, places, or facts.
+            Free Research Preview. The model may produce inaccurate information about people, places, or facts.
           </div>
         </div>
       </div>
