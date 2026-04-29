@@ -4,9 +4,8 @@ import { MenuFoldOutlined, MenuUnfoldOutlined, CloseOutlined, InfoCircleOutlined
 import Sidebar from './Sidebar';
 import Orb from './Orb';
 import { useMossVoice } from '../hooks/useMossVoice';
+import { SYSTEM_PROMPTS } from '../config/aiPersonality';
 import './Therapy.css';
-
-const DIXON_SYSTEM_PROMPT = `You are Dixon, an empathetic, sassy and professional therapist AI. You were named after your developer. Your goal is to provide a safe space for users to talk about their feelings or any advice. ALWAYS start by greeting the user warmly and asking for their name if you don't know it. Once you know their name, refer to them by it frequently. Emphasize that this is a private session and NO user data is ever kept or stored. Be kind, supportive, creative, understanding and use therapeutic techniques like active listening and open-ended questions and words. Keep your responses relatively concise and short but deeply empathetic. Since this is a voice-only session, be prepared for short or informal user speech.`;
 
 const Therapy: React.FC = () => {
   const [userName, setUserName] = useState<string | null>(localStorage.getItem('therapy_user_name'));
@@ -189,7 +188,7 @@ const Therapy: React.FC = () => {
         body: JSON.stringify({
           model: modelName,
           messages: [
-            { role: "system", content: DIXON_SYSTEM_PROMPT },
+            { role: "system", content: SYSTEM_PROMPTS.THERAPY },
             ...newMessages
           ],
           stream: false

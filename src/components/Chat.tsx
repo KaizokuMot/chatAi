@@ -11,6 +11,8 @@ import { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, getDoc
 import Settings from './Settings';
 import LoginModal from './LoginModal';
 import Sidebar from './Sidebar';
+import { SYSTEM_PROMPTS } from '../config/aiPersonality';
+import { generateToolsDescription } from '../config/aiTools';
 
 interface MessageData {
   id?: string;
@@ -106,6 +108,8 @@ const Chat: React.FC = () => {
         ? `Greet the returning user ${displayName} warmly and offer help.`
         : `Greet the user warmly and offer help. Keep it extremely short.`;
 
+      const systemPrompt = SYSTEM_PROMPTS.GENERAL + '\n' + generateToolsDescription();
+
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
@@ -114,7 +118,7 @@ const Chat: React.FC = () => {
         body: JSON.stringify({
           model: modelName,
           messages: [
-            // { role: "system", content: "You are an entity from another time but here you're a helpful AI assistant built by kalanzi dixon" },
+            { role: "system", content: systemPrompt },
             { role: "user", content: promptText }
           ],
           stream: false
@@ -250,6 +254,7 @@ const Chat: React.FC = () => {
         content: m.text
       }));
       const modelName = localStorage.getItem('modelName') || 'gemma3:1b';
+      const systemPrompt = SYSTEM_PROMPTS.GENERAL + '\n' + generateToolsDescription();
 
       const response = await fetch(apiUrl, {
         method: 'POST',
@@ -259,6 +264,7 @@ const Chat: React.FC = () => {
         body: JSON.stringify({
           model: modelName,
           messages: [
+            { role: "system", content: systemPrompt },
             ...currentHistory,
             { role: "user", content: userMsg }
           ],
