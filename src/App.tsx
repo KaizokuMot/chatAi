@@ -250,8 +250,8 @@ const App: React.FC = () => {
                   lineHeight: 1.7, margin: '0 0 8px', textAlign: 'center',
                 }}>
                   {connError
-                    ? 'We run a tight budget and sometimes we are unable to serve the model. Please try again later.'
-                    : 'We run a tight budget and sometimes we are unable to serve the model. Please try again later.'}
+                    ? 'We run a tight ship and sometimes we are unable to serve the model. Please try again later.'
+                    : 'We run a tight ship and sometimes we are unable to serve the model. Please try again later.'}
                 </p>
                 <p style={{
                   fontSize: 11, color: 'rgba(255,255,255,0.35)',
