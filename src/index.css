@@ -21,6 +21,8 @@
   --sidebar-item-hover: rgba(0, 0, 0, 0.05);
   --sidebar-beta-bg: rgba(0, 0, 0, 0.05);
   --sidebar-beta-border: rgba(0, 0, 0, 0.1);
+  --menu-tag-bg: #111827;
+  --menu-tag-text: #ffffff;
   --accent-color: #ff8c42;
 }
 
@@ -47,6 +49,8 @@ body.dark {
   --sidebar-item-hover: rgba(255, 255, 255, 0.05);
   --sidebar-beta-bg: rgba(255, 255, 255, 0.03);
   --sidebar-beta-border: rgba(255, 255, 255, 0.1);
+  --menu-tag-bg: rgba(59, 130, 246, 0.2);
+  --menu-tag-text: #ffffff;
 }
 
 body {
@@ -169,8 +173,8 @@ body.dark ::-webkit-scrollbar-thumb {
 }
 
 .menu-tag {
-    color: white;
-    background-color: rgba(59, 130, 246, 0.2);
+    color: var(--menu-tag-text);
+    background-color: var(--menu-tag-bg);
     border-radius: 4px;
     margin-left: auto;
     padding: 1px 4px;

@@ -360,7 +360,7 @@ const Chat: React.FC = () => {
 
       {/* Main Content Area */}
       <div className="main-content">
-        <div style={{ padding: '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-topbar)', borderBottom: '1px solid var(--border-color)' }}>
+        <div style={{ padding: '32px 24px 20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-topbar)', borderBottom: '1px solid var(--border-color)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <Button icon={<MenuFoldOutlined />} onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="mobile-only-btn" style={{ display: 'none' }} />
             <div style={{ marginLeft: 8, display: 'flex', alignItems: 'center' }}>
@@ -446,8 +446,8 @@ const Chat: React.FC = () => {
 
       {/* Right Sidebar */}
       <div className="right-sidebar">
-        <div style={{ padding: '21px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)' }}>
-          <span style={{ fontWeight: 600, fontSize: 16 }}>History</span>
+        <div style={{ padding: '32px 21px 21px 21px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)' }}>
+          <span style={{ fontWeight: 600, fontSize: "13px" }}>History</span>
           <span style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{messages.length}/50</span>
         </div>
         <div style={{ flex: 1, overflowY: 'auto', padding: '16px 24px' }}>

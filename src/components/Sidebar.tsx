@@ -49,17 +49,17 @@ const Sidebar: React.FC<SidebarProps> = ({
 
             {/* Left Sidebar */}
             <div className={`left-sidebar ${mobileMenuOpen ? 'open' : ''} ${hiddenByDefault ? 'hidden-by-default' : ''}`}>
-                <div style={{ padding: '24px', display: 'flex', alignItems: 'center' }}>
+                <div style={{display: 'flex', alignItems: 'center' }}>
                     <div
                         style={{
                             background: 'var(--accent-color)',
                             width: 32,
                             height: 32,
+                            margin: '15px 12px 2px 15px',
                             borderRadius: 8,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            marginRight: 12,
                             cursor: 'pointer'
                         }}
                         onClick={() => navigate('/')}
