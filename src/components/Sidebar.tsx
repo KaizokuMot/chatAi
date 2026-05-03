@@ -52,7 +52,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 <div style={{ padding: '24px', display: 'flex', alignItems: 'center' }}>
                     <div
                         style={{
-                            background: '#ff8c42',
+                            background: 'var(--accent-color)',
                             width: 32,
                             height: 32,
                             borderRadius: 8,
@@ -67,7 +67,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                         <RobotOutlined style={{ color: '#fff', fontSize: 16 }} />
                     </div>
                     <h2
-                        style={{ margin: 0, fontSize: 18, color: '#fff', cursor: 'pointer' }}
+                        style={{ margin: 0, fontSize: 18, color: 'var(--sidebar-text)', cursor: 'pointer' }}
                         onClick={() => navigate('/')}
                     >
                         {/* NanoChat */}
@@ -125,7 +125,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 <div className="beta-card">
                     <div
                         style={{
-                            background: 'rgba(255,255,255,0.2)',
+                            background: 'var(--sidebar-beta-bg)',
                             width: 32,
                             height: 32,
                             borderRadius: 8,
@@ -135,10 +135,10 @@ const Sidebar: React.FC<SidebarProps> = ({
                             marginBottom: 16
                         }}
                     >
-                        <RobotOutlined style={{ fontSize: 18 }} />
+                        <RobotOutlined style={{ fontSize: 18, color: 'var(--sidebar-text)' }} />
                     </div>
-                    <h3 style={{ margin: '0 0 2px 0', fontSize: 10 }}>beta v.15</h3>
-                    <p style={{ margin: 0, fontSize: 10, opacity: 0.6 }}>
+                    <h3 style={{ margin: '0 0 2px 0', fontSize: 10, color: 'var(--sidebar-text)' }}>beta v.15</h3>
+                    <p style={{ margin: 0, fontSize: 10, opacity: 0.6, color: 'var(--sidebar-text)' }}>
                         Kalanzi Dixon
                     </p>
                 </div>

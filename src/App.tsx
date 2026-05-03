@@ -369,7 +369,6 @@ const logoOrbStyle: React.CSSProperties = {
   width: 64, height: 64, borderRadius: '50%',
   background: 'linear-gradient(135deg, #ff8c42 0%, #ffb347 50%, #ff6b35 100%)',
   display: 'flex', alignItems: 'center', justifyContent: 'center',
-  animation: 'pulse-orb 2s ease-in-out infinite',
   boxShadow: '0 0 40px rgba(255, 140, 66, 0.3), 0 0 80px rgba(255, 140, 66, 0.1)',
 };
 
