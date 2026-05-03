@@ -207,7 +207,6 @@ const App: React.FC = () => {
 
             <p style={{ ...messageStyle, color: darkMode ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.5)' }}>{statusMessage}</p>
 
-            {/* Progress bar */}
             <div style={progressTrackStyle}>
               <div
                 style={{
@@ -246,7 +245,7 @@ const App: React.FC = () => {
             {serverStatus === 'error' && (
               <div style={{ marginTop: 20 }}>
                 <p style={{
-                  fontSize: 12, color: 'rgba(255,255,255,0.55)',
+                  fontSize: 12, color: darkMode ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.55)',
                   lineHeight: 1.7, margin: '0 0 8px', textAlign: 'center',
                 }}>
                   {connError
@@ -254,7 +253,7 @@ const App: React.FC = () => {
                     : 'We run a tight ship and sometimes we are unable to serve the model. Please try again later.'}
                 </p>
                 <p style={{
-                  fontSize: 11, color: 'rgba(255,255,255,0.35)',
+                  fontSize: 11, color: darkMode ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.5)',
                   margin: '0 0 20px', textAlign: 'center',
                 }}>
                   For more info, reach out at{' '}
@@ -269,7 +268,8 @@ const App: React.FC = () => {
                   <button
                     style={{
                       padding: '8px 16px', borderRadius: 8, border: 'none',
-                      background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)',
+                      background: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+                      color: darkMode ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)',
                       fontSize: 12, cursor: 'pointer', transition: 'all 0.2s',
                       display: 'flex', alignItems: 'center', gap: 6,
                     }}
@@ -280,7 +280,7 @@ const App: React.FC = () => {
                   >
                     Proceed Anyway
                   </button>
-                  <button style={{ ...retryBtnStyle, background: 'rgba(255,255,255,0.08)' }} onClick={handleRetry}>
+                  <button style={{ ...retryBtnStyle, background: darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)', color: darkMode ? '#fff' : '#111827' }} onClick={handleRetry}>
                     <ReloadOutlined style={{ marginRight: 6 }} />
                     Retry Connection
                   </button>
