@@ -13,7 +13,14 @@ const Therapy: React.FC = () => {
   const [lastUserTranscript, setLastUserTranscript] = useState<string | null>(null);
   const [interimTranscript, setInterimTranscript] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
-  const { speakText, isSpeaking, engineStatus, progress, chunkCount } = useMossVoice();
+  const { 
+    speakText, 
+    isSpeaking, 
+    isGeneratingVoice,
+    engineStatus, 
+    progress, 
+    chunkCount 
+  } = useMossVoice();
 
   const [isListening, setIsListening] = useState(false);
   const [micStatus, setMicStatus] = useState<'prompt' | 'granted' | 'denied'>('prompt');
@@ -38,9 +45,7 @@ const Therapy: React.FC = () => {
         result.onchange = () => setMicStatus(result.state);
       } catch (e) {
         // Fallback for browsers that don't support mic query
-        navigator.mediaDevices.getUserMedia({ audio: true })
-          .then(() => setMicStatus('granted'))
-          .catch(() => setMicStatus('denied'));
+        navigator.mediaDevices.getUserMedia({ audio: true }).then(() => setMicStatus('granted')).catch(() => setMicStatus('denied'));
       }
     }
 
@@ -100,22 +105,33 @@ const Therapy: React.FC = () => {
   const initSpeechRecognition = () => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (SpeechRecognition) {
-      recognitionRef.current = new SpeechRecognition();
-      recognitionRef.current.continuous = false;
-      recognitionRef.current.interimResults = true;
-      recognitionRef.current.lang = 'en-US';
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = 'en-US';
 
-      recognitionRef.current.onstart = () => setIsListening(true);
-      recognitionRef.current.onend = () => {
-        setIsListening(false);
-        setInterimTranscript('');
+      recognition.onstart = () => {
+        setIsListening(true);
+        console.log("Speech Recognition started");
       };
-      recognitionRef.current.onerror = (event: any) => {
+
+      recognition.onend = () => {
+        setIsListening(false);
+        console.log("Speech Recognition ended");
+      };
+
+      recognition.onerror = (event: any) => {
         console.error("Speech Recognition Error:", event.error);
+        if (event.error === 'network') {
+          message.warning("Voice network blip. Reconnecting...");
+          setTimeout(() => {
+             if (!isListening) recognition.start();
+          }, 1000);
+        }
         setIsListening(false);
-        setInterimTranscript('');
       };
-      recognitionRef.current.onresult = (event: any) => {
+      
+      recognition.onresult = (event: any) => {
         let interim = '';
         let final = '';
         for (let i = event.resultIndex; i < event.results.length; ++i) {
@@ -331,7 +347,7 @@ const Therapy: React.FC = () => {
           ) : (
             <Orb
               isPlaying={isSpeaking}
-              isGenerating={isGenerating}
+              isGenerating={isGenerating || isGeneratingVoice}
               isListening={isListening}
               status={engineStatus}
               progress={progress}
@@ -339,6 +355,7 @@ const Therapy: React.FC = () => {
               onStart={startListening}
               onEnd={stopListening}
             />
+
 
           )}
         </div>
