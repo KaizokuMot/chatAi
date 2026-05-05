@@ -10,8 +10,6 @@ export function useMossVoice() {
   
   const watchdogRef = useRef<any>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
-  const audioQueue = useRef<Blob[]>([]);
-  const isPlayingQueue = useRef(false);
 
   const prepareAudio = async () => {
     try {
@@ -22,8 +20,8 @@ export function useMossVoice() {
       if (audioCtxRef.current.state === 'suspended') {
         await audioCtxRef.current.resume();
       }
-    } catch (e) {
-      console.warn("AudioContext preparation failed:", e);
+    } catch (_) {
+      console.warn("AudioContext preparation failed");
     }
   };
 
@@ -37,10 +35,6 @@ export function useMossVoice() {
     setProgress(0);
     setChunkCount(sentences.length);
     prepareAudio();
-
-    // Reset queue
-    audioQueue.current = [];
-    isPlayingQueue.current = false;
 
     // Generate each sentence for faster first-response
     for (let i = 0; i < sentences.length; i++) {
@@ -81,7 +75,7 @@ export function useMossVoice() {
               socket.close();
             }
           }
-        } catch (e) {
+        } catch (_) {
           setError('Failed to parse server response');
         }
       };
