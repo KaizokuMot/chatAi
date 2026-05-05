@@ -49,7 +49,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
             {/* Left Sidebar */}
             <div className={`left-sidebar ${mobileMenuOpen ? 'open' : ''} ${hiddenByDefault ? 'hidden-by-default' : ''}`}>
-                <div style={{display: 'flex', alignItems: 'center' }}>
+                <div style={{display: 'none', alignItems: 'center' }}>
                     <div
                         style={{
                             background: 'var(--accent-color)',
