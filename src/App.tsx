@@ -214,10 +214,11 @@ const App: React.FC = () => {
                   width: serverStatus === 'online' && !authLoading ? '100%' :
                     serverStatus === 'error' ? '100%' :
                       retryCount > 0 ? `${30 + retryCount * 25}%` : '40%',
-                  background: serverStatus === 'error'
+                  backgroundImage: serverStatus === 'error'
                     ? 'linear-gradient(90deg, #ff4d4f, #ff7875)'
                     : 'linear-gradient(90deg, #ff8c42, #ffb347, #ff8c42)',
                   backgroundSize: '200% 100%',
+
                   animation: serverStatus !== 'online' && serverStatus !== 'error'
                     ? 'shimmer 1.5s ease-in-out infinite' : 'none',
                 }}

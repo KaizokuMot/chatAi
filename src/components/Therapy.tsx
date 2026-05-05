@@ -13,7 +13,8 @@ const Therapy: React.FC = () => {
   const [lastUserTranscript, setLastUserTranscript] = useState<string | null>(null);
   const [interimTranscript, setInterimTranscript] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
-  const { speakText, isSpeaking, engineStatus } = useMossVoice();
+  const { speakText, isSpeaking, engineStatus, progress, chunkCount } = useMossVoice();
+
   const [isListening, setIsListening] = useState(false);
   const [micStatus, setMicStatus] = useState<'prompt' | 'granted' | 'denied'>('prompt');
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -48,8 +49,12 @@ const Therapy: React.FC = () => {
       const healthUrl = `${baseUrl}/api/health`;
       const response = await fetch(healthUrl, {
         method: 'GET',
-        headers: { 'ngrok-skip-browser-warning': 'true' }
+        headers: { 
+          'ngrok-skip-browser-warning': 'true',
+          'bypass-tunnel-reminder': 'true'
+        }
       });
+
       if (response.ok || response.status === 404) setServerStatus('online');
       else setServerStatus('error');
     } catch (e) {
@@ -145,19 +150,18 @@ const Therapy: React.FC = () => {
     }
   };
 
-  const toggleListening = () => {
-    if (isListening) {
-      if (recognitionRef.current) recognitionRef.current.stop();
-    } else {
-      startListening();
+  const stopListening = () => {
+    if (recognitionRef.current && isListening) {
+      recognitionRef.current.stop();
     }
   };
 
   const greetUser = async () => {
-    const greeting = "Hello! I am Dixon, your therapist. It's a pleasure to meet you. To get started, may I ask your name?";
+    const greeting = "Hey! My name is Dixon It's a pleasure to meet you. To get started, may I ask your name?";
     setMessages([{ role: 'assistant', content: greeting }]);
     speakText(greeting);
   };
+
 
 
   const handleReceiveVoice = async (transcript: string) => {
@@ -224,6 +228,13 @@ const Therapy: React.FC = () => {
     greetUser();
   };
 
+  const handleTestVoice = () => {
+    const testMsg = "Hello. I am ready to assist you today. How are you feeling?";
+    speakText(testMsg);
+    message.success("Test voice triggered.");
+  };
+
+
 
 
 
@@ -235,6 +246,15 @@ const Therapy: React.FC = () => {
         <div className={`status-badge ${micStatus === 'granted' ? 'online' : micStatus === 'denied' ? 'error' : 'checking'}`}>
           HEARING: {micStatus.toUpperCase()}
         </div>
+        <Button 
+          size="small" 
+          type="primary" 
+          ghost 
+          onClick={handleTestVoice} 
+          style={{ fontSize: '9px', height: '20px', borderRadius: '10px' }}
+        >
+          TEST VOICE
+        </Button>
       </div>
       <div className="privacy-badge">Private Session</div>
     </>
@@ -313,22 +333,28 @@ const Therapy: React.FC = () => {
               isPlaying={isSpeaking}
               isGenerating={isGenerating}
               isListening={isListening}
-              onClick={toggleListening}
+              status={engineStatus}
+              progress={progress}
+              chunkCount={chunkCount}
+              onStart={startListening}
+              onEnd={stopListening}
             />
+
           )}
         </div>
 
         {/* Status Indicator instead of Input Overlay */}
         <div className="hero-input-overlay" style={{ border: 'none', background: 'transparent', pointerEvents: 'none' }}>
-          <div className={`orb-label ${isListening ? 'listening-active' : ''}`} style={{ fontSize: 10, color: isListening ? '#00ffcc' : 'rgba(255,255,255,0.4)', textAlign: 'center' }}>
+          {/* <div className={`orb-label ${isListening ? 'listening-active' : ''}`} style={{ fontSize: 14, color: isListening ? '#00ffcc' : 'rgba(255,255,255,0.4)', textAlign: 'center' }}>
             {isListening && !interimTranscript
+
               ? 'Listening...'
               : isSpeaking
                 ? engineStatus
                 : isGenerating
                   ? 'Thinking...'
                   : 'a ghost in the shell...'}
-          </div>
+          </div> */}
         </div>
 
         {/* Reset Action */}
