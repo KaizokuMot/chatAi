@@ -57,7 +57,7 @@ export function useMossVoice() {
         socket.send(JSON.stringify({ text, voice: "Dixon" }));
       };
 
-      socket.onerror = (event) => {
+      socket.onerror = (_) => {
         setError('WebSocket connection failed');
       };
 
@@ -85,7 +85,7 @@ export function useMossVoice() {
         headers: { 'Content-Type': 'application/json', 'bypass-tunnel-reminder': 'true' },
         credentials: 'include',
         body: JSON.stringify({ text })
-      }).catch((err) => {
+      }).catch((_) => {
         setError('TTS API request failed');
       });
 
