@@ -18,7 +18,6 @@ const Orb: React.FC<OrbProps> = ({
   isListening, 
   status, 
   progress,
-  chunkCount,
   duration,
   onToggle 
 }) => {
