@@ -8,7 +8,8 @@ export function useMossVoice() {
   const [progress, setProgress] = useState<number>(0);
   const [chunkCount, setChunkCount] = useState<number>(0);
   
-  const watchdogRef = useRef<NodeJS.Timeout | null>(null);
+  const watchdogRef = useRef<any>(null);
+
   const audioCtxRef = useRef<AudioContext | null>(null);
 
   const prepareAudio = async () => {

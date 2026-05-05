@@ -7,6 +7,7 @@ interface OrbProps {
   isListening?: boolean;
   status?: string;
   progress?: number;
+  chunkCount?: number;
   duration?: string;
   onToggle: () => void;
 }
@@ -17,9 +18,11 @@ const Orb: React.FC<OrbProps> = ({
   isListening, 
   status, 
   progress,
+  chunkCount,
   duration,
   onToggle 
 }) => {
+
 
   return (
     <div 
