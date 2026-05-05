@@ -11,31 +11,40 @@ export function useMossVoice() {
   const speakText = async (aiText: string) => {
     setIsGeneratingVoice(true);
     setError(null);
-    setEngineStatus('initializing...');
+    setEngineStatus('warming up...');
     setProgress(0);
     setChunkCount(0);
 
-    const baseUrl = "https://shy-buckets-fail.loca.lt";
+    const baseUrl = "https://fruity-deer-lead.loca.lt";
     const apiTtsUrl = `${baseUrl}/api/tts`;
-    const wsUrl = `wss://shy-buckets-fail.loca.lt/api/tts/ws`;
+    const wsUrl = `wss://https://fruity-deer-lead.loca.lt/api/tts/ws`;
 
     try {
       const socket = new WebSocket(wsUrl);
       
       socket.onopen = () => {
-        setEngineStatus('connected...');
+        console.log("WebSocket connected to TTS engine");
         socket.send(JSON.stringify({ text: aiText, voice: "Junhao" }));
       };
 
       socket.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
-          if (data.status) setEngineStatus(data.status);
+          
+          if (data.status) {
+             // If we start getting chunks, change status to 'generating'
+             if (data.chunk && data.chunk > 0) {
+               setEngineStatus('generating');
+             } else {
+               setEngineStatus(data.status);
+             }
+          }
+          
           if (data.progress !== undefined) setProgress(data.progress);
           if (data.chunk !== undefined) setChunkCount(data.chunk);
 
-          // Handle both 'complete' (server default) and 'Loading audio...' (user edit)
           if (data.status === 'complete' || data.status === 'Loading audio...' || data.audio_url) {
+            setProgress(100);
             const path = data.audio_url || data.url;
             if (path) {
               const fullUrl = path.startsWith('http') ? path : `${baseUrl}${path}`;
@@ -48,15 +57,18 @@ export function useMossVoice() {
         }
       };
 
-      socket.onerror = () => setEngineStatus('ws error...');
+      socket.onerror = () => {
+        setEngineStatus('ws error...');
+        setIsGeneratingVoice(false);
+      };
 
-      // Also trigger via POST
+      // Also trigger via POST as a silent background prep
       fetch(apiTtsUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'bypass-tunnel-reminder': 'true' },
         credentials: 'include',
         body: JSON.stringify({ text: aiText })
-      }).catch(e => console.warn("POST fallback failed", e));
+      }).catch(() => {});
 
     } catch (err: any) {
       console.error("TTS Error:", err);
@@ -67,7 +79,7 @@ export function useMossVoice() {
 
   const fetchAndPlayAudio = async (url: string) => {
     try {
-      setEngineStatus('downloading audio...');
+      setEngineStatus('ready...');
       const resp = await fetch(url, {
         headers: { 'bypass-tunnel-reminder': 'true' },
         credentials: 'include'
@@ -83,9 +95,9 @@ export function useMossVoice() {
   };
 
   const playAudioFromBlob = async (blob: Blob) => {
-    setIsGeneratingVoice(false); // Finished generating
-    setIsSpeaking(true); // Now we are actually speaking
-    setEngineStatus("playing...");
+    setIsGeneratingVoice(false);
+    setIsSpeaking(true);
+    setEngineStatus("speaking...");
     
     try {
       const AudioContextClass = (window.AudioContext || (window as any).webkitAudioContext);
@@ -103,7 +115,7 @@ export function useMossVoice() {
       };
       source.start(0);
     } catch (err) {
-      console.error("AudioContext failed, fallback used", err);
+      console.error("AudioContext failed", err);
       const audioUrl = URL.createObjectURL(blob);
       const audio = new Audio(audioUrl);
       audio.onended = () => {
