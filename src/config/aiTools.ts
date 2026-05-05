@@ -20,22 +20,24 @@ export const AI_TOOLS: Record<string, AITool> = {
   current_date_time: {
     name: 'Current Date & Time',
     description: 'INTERNAL: AI has automatic access to current time/date context.',
-    enabled: true,
+    enabled: false,
     showInSidebar: false,
     category: 'information',
     version: '1.0',
     lastUpdated: '2026-04-29',
   },
 
+
   calendar_aware: {
     name: 'Calendar Awareness',
     description: 'INTERNAL: AI has automatic access to calendar/holiday context.',
-    enabled: true,
+    enabled: false,
     showInSidebar: false,
     category: 'information',
     version: '1.0',
     lastUpdated: '2026-04-29',
   },
+
 
   // RESEARCH TOOLS (Automatic)
   internet_search: {
@@ -73,42 +75,46 @@ export const AI_TOOLS: Record<string, AITool> = {
     name: 'Image Recognition & Analysis',
     description: 'Analyze images to identify objects, text (OCR), scenes, and provide insights. Can read charts and diagrams.',
     enabled: true,
+    showInSidebar: true,
+    category: 'analysis',
+    version: '1.0',
+    lastUpdated: '2026-04-29',
+  },
+
+
+  text_analysis: {
+    name: 'Text Analysis',
+    description: 'Analyze text for sentiment, key topics, entities, and patterns. Useful for understanding content and research.',
+    enabled: false,
     showInSidebar: false,
     category: 'analysis',
     version: '1.0',
     lastUpdated: '2026-04-29',
   },
 
-  text_analysis: {
-    name: 'Text Analysis',
-    description: 'Analyze text for sentiment, key topics, entities, and patterns. Useful for understanding content and research.',
-    enabled: true,
-    showInSidebar: false,
-    category: 'analysis',
-    version: '1.0',
-    lastUpdated: '2026-04-29',
-  },
 
   // UTILITY TOOLS
   data_synthesis: {
     name: 'Data Synthesis',
     description: 'Combine information from multiple sources into coherent summaries and insights.',
-    enabled: true,
+    enabled: false,
     showInSidebar: false,
     category: 'utility',
     version: '1.0',
     lastUpdated: '2026-04-29',
   },
 
+
   research_compilation: {
     name: 'Research Compilation',
     description: 'Compile research from multiple sources with proper citations and structured insights.',
-    enabled: true,
+    enabled: false,
     showInSidebar: false,
     category: 'utility',
     version: '1.0',
     lastUpdated: '2026-04-29',
   },
+
 };
 
 /**
