@@ -17,7 +17,7 @@ export function useMossVoice() {
 
     const baseUrl = "https://fruity-deer-lead.loca.lt";
     const apiTtsUrl = `${baseUrl}/api/tts`;
-    const wsUrl = `wss://https://fruity-deer-lead.loca.lt/api/tts/ws`;
+    const wsUrl = `wss://fruity-deer-lead.loca.lt/api/tts/ws`;
 
     try {
       const socket = new WebSocket(wsUrl);
