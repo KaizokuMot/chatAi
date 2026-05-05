@@ -57,13 +57,7 @@ const Orb: React.FC<OrbProps> = ({
               : 'TAP TO TALK'}
       </div>
     </div>
-
-
-
-    </div>
   );
 };
 
 export default Orb;
-
-
