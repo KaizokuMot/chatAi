@@ -9,8 +9,9 @@ export function useMossVoice() {
   const [chunkCount, setChunkCount] = useState<number>(0);
   
   const watchdogRef = useRef<any>(null);
-
   const audioCtxRef = useRef<AudioContext | null>(null);
+  const audioQueue = useRef<Blob[]>([]);
+  const isPlayingQueue = useRef(false);
 
   const prepareAudio = async () => {
     try {
@@ -26,26 +27,34 @@ export function useMossVoice() {
     }
   };
 
-  const speakText = async (aiText: string) => {
+  const speakText = async (fullText: string) => {
+    // 1. Split text into smaller chunks (sentences) for faster first-response
+    const sentences = fullText.match(/[^.!?]+[.!?]+/g) || [fullText];
+    
     setIsGeneratingVoice(true);
-    setError(null);
     setEngineStatus('warming up...');
     setProgress(0);
     setChunkCount(0);
-
     prepareAudio();
 
-    const baseUrl = "https://lazy-words-sell.loca.lt";
+    // Reset queue
+    audioQueue.current = [];
+    isPlayingQueue.current = false;
+
+    // Generate each sentence (for now we generate the full text but we could loop)
+    // To truly optimize, we would send multiple small requests, but let's optimize the single flow first
+    await processText(fullText);
+  };
+
+  const processText = async (text: string) => {
+    const baseUrl = "https://thick-coins-travel.loca.lt";
     const apiTtsUrl = `${baseUrl}/api/tts`;
-    // Note: Localtunnel sometimes struggles with WSS from different origins
-    const wsUrl = `wss://lazy-words-sell.loca.lt/api/tts/ws`;
+    const wsUrl = `wss://thick-coins-travel.loca.lt/api/tts/ws`;
 
     try {
-      // Create WebSocket with bypass if possible (using subprotocols is a common trick)
       const socket = new WebSocket(wsUrl);
-      
       socket.onopen = () => {
-        socket.send(JSON.stringify({ text: aiText, voice: "Junhao" }));
+        socket.send(JSON.stringify({ text, voice: "Dixon" }));
       };
 
       socket.onmessage = (event) => {
@@ -65,30 +74,12 @@ export function useMossVoice() {
         } catch (e) {}
       };
 
-      // If WebSocket fails immediately (CORS/Proxy issue), Dixon will wait for the POST fallback
-      socket.onerror = () => {
-        console.warn("WebSocket blocked by proxy, waiting for POST response...");
-      };
-
-      // POST Request with ALL possible bypass headers
       fetch(apiTtsUrl, {
         method: 'POST',
-        mode: 'cors', // Explicitly set CORS mode
-        headers: { 
-          'Content-Type': 'application/json',
-          'bypass-tunnel-reminder': 'true',
-          'x-bypass-test': 'true'
-        },
+        headers: { 'Content-Type': 'application/json', 'bypass-tunnel-reminder': 'true' },
         credentials: 'include',
-        body: JSON.stringify({ text: aiText })
-      }).then(async (resp) => {
-         if (resp.ok) {
-           const blob = await resp.blob();
-           if (blob.size > 1000) playAudioFromBlob(blob);
-         }
-      }).catch(e => {
-        console.error("CORS/Network error on POST:", e);
-      });
+        body: JSON.stringify({ text })
+      }).catch(() => {});
 
     } catch (err: any) {
       setIsGeneratingVoice(false);
@@ -120,7 +111,7 @@ export function useMossVoice() {
     watchdogRef.current = setTimeout(() => {
       setIsSpeaking(false);
       setEngineStatus('idle');
-    }, 15000);
+    }, 20000);
     
     try {
       await prepareAudio();
@@ -135,7 +126,6 @@ export function useMossVoice() {
         setIsSpeaking(false);
         setEngineStatus('idle');
       };
-      
       source.start(0);
     } catch (err) {
       console.error("AudioContext failed", err);
