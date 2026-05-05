@@ -19,8 +19,10 @@ const Therapy: React.FC = () => {
     isGeneratingVoice,
     engineStatus, 
     progress, 
-    chunkCount 
+    chunkCount,
+    forceReset
   } = useMossVoice();
+
 
   const [isListening, setIsListening] = useState(false);
   const [micStatus, setMicStatus] = useState<'prompt' | 'granted' | 'denied'>('prompt');
@@ -197,10 +199,17 @@ const Therapy: React.FC = () => {
   };
 
   const toggleListening = () => {
-    if (isSpeaking || isGenerating || isGeneratingVoice) return;
+    // If we're generating or speaking, a tap acts as a 'Force Reset'
+    if (isGenerating || isGeneratingVoice || isSpeaking) {
+      forceReset();
+      setIsGenerating(false);
+      return;
+    }
+    
     if (isListening) stopListening();
     else startListening();
   };
+
 
 
   const greetUser = async () => {

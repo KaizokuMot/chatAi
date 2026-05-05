@@ -9,6 +9,21 @@ export function useMossVoice() {
   const [chunkCount, setChunkCount] = useState<number>(0);
   
   const watchdogRef = useRef<NodeJS.Timeout | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+
+  const prepareAudio = async () => {
+    try {
+      if (!audioCtxRef.current) {
+        const AudioContextClass = (window.AudioContext || (window as any).webkitAudioContext);
+        audioCtxRef.current = new AudioContextClass();
+      }
+      if (audioCtxRef.current.state === 'suspended') {
+        await audioCtxRef.current.resume();
+      }
+    } catch (e) {
+      console.warn("AudioContext preparation failed:", e);
+    }
+  };
 
   const speakText = async (aiText: string) => {
     setIsGeneratingVoice(true);
@@ -17,30 +32,28 @@ export function useMossVoice() {
     setProgress(0);
     setChunkCount(0);
 
-    const baseUrl = "https://fruity-deer-lead.loca.lt";
+    prepareAudio();
+
+    const baseUrl = "https://lazy-words-sell.loca.lt";
     const apiTtsUrl = `${baseUrl}/api/tts`;
-    const wsUrl = `wss://fruity-deer-lead.loca.lt/api/tts/ws`;
+    // Note: Localtunnel sometimes struggles with WSS from different origins
+    const wsUrl = `wss://lazy-words-sell.loca.lt/api/tts/ws`;
 
     try {
+      // Create WebSocket with bypass if possible (using subprotocols is a common trick)
       const socket = new WebSocket(wsUrl);
       
       socket.onopen = () => {
-        console.log("WebSocket connected to TTS engine");
         socket.send(JSON.stringify({ text: aiText, voice: "Junhao" }));
       };
 
       socket.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
-          if (data.status) {
-             if (data.chunk && data.chunk > 0) setEngineStatus('generating');
-             else setEngineStatus(data.status);
-          }
+          if (data.status) setEngineStatus(data.status);
           if (data.progress !== undefined) setProgress(data.progress);
-          if (data.chunk !== undefined) setChunkCount(data.chunk);
-
+          
           if (data.status === 'complete' || data.status === 'Loading audio...' || data.audio_url) {
-            setProgress(100);
             const path = data.audio_url || data.url;
             if (path) {
               const fullUrl = path.startsWith('http') ? path : `${baseUrl}${path}`;
@@ -48,25 +61,35 @@ export function useMossVoice() {
               socket.close();
             }
           }
-        } catch (e) {
-          console.error("WS parse error:", e);
-        }
+        } catch (e) {}
       };
 
+      // If WebSocket fails immediately (CORS/Proxy issue), Dixon will wait for the POST fallback
       socket.onerror = () => {
-        console.warn("WebSocket error, falling back to polling if needed...");
+        console.warn("WebSocket blocked by proxy, waiting for POST response...");
       };
 
-      // Silent POST fallback - ignore ERR_EMPTY_RESPONSE errors here
+      // POST Request with ALL possible bypass headers
       fetch(apiTtsUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'bypass-tunnel-reminder': 'true' },
+        mode: 'cors', // Explicitly set CORS mode
+        headers: { 
+          'Content-Type': 'application/json',
+          'bypass-tunnel-reminder': 'true',
+          'x-bypass-test': 'true'
+        },
         credentials: 'include',
         body: JSON.stringify({ text: aiText })
-      }).catch(() => {});
+      }).then(async (resp) => {
+         if (resp.ok) {
+           const blob = await resp.blob();
+           if (blob.size > 1000) playAudioFromBlob(blob);
+         }
+      }).catch(e => {
+        console.error("CORS/Network error on POST:", e);
+      });
 
     } catch (err: any) {
-      console.error("TTS Error:", err);
       setIsGeneratingVoice(false);
       setEngineStatus('idle');
     }
@@ -74,7 +97,6 @@ export function useMossVoice() {
 
   const fetchAndPlayAudio = async (url: string) => {
     try {
-      setEngineStatus('downloading...');
       const resp = await fetch(url, {
         headers: { 'bypass-tunnel-reminder': 'true' },
         credentials: 'include'
@@ -82,12 +104,8 @@ export function useMossVoice() {
       if (resp.ok) {
         const blob = await resp.blob();
         playAudioFromBlob(blob);
-      } else {
-        setIsGeneratingVoice(false);
-        setEngineStatus('error');
       }
     } catch (e) {
-      console.error("Failed to fetch audio:", e);
       setIsGeneratingVoice(false);
     }
   };
@@ -97,56 +115,48 @@ export function useMossVoice() {
     setIsSpeaking(true);
     setEngineStatus("speaking...");
 
-    // Safety Watchdog: Reset if stuck for > 60s
     if (watchdogRef.current) clearTimeout(watchdogRef.current);
     watchdogRef.current = setTimeout(() => {
-      if (isSpeaking) {
-        console.warn("TTS Watchdog: Audio seems stuck, resetting...");
-        setIsSpeaking(false);
-        setEngineStatus('idle');
-      }
-    }, 60000);
+      setIsSpeaking(false);
+      setEngineStatus('idle');
+    }, 15000);
     
     try {
-      const AudioContextClass = (window.AudioContext || (window as any).webkitAudioContext);
-      const audioCtx = new AudioContextClass();
-      
-      // CRITICAL FOR PRODUCTION: Ensure context is resumed
-      if (audioCtx.state === 'suspended') {
-        await audioCtx.resume();
-      }
-      
+      await prepareAudio();
       const arrayBuffer = await blob.arrayBuffer();
-      const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-      const source = audioCtx.createBufferSource();
+      const audioBuffer = await audioCtxRef.current!.decodeAudioData(arrayBuffer);
+      const source = audioCtxRef.current!.createBufferSource();
       source.buffer = audioBuffer;
-      source.connect(audioCtx.destination);
+      source.connect(audioCtxRef.current!.destination);
       
       source.onended = () => {
         if (watchdogRef.current) clearTimeout(watchdogRef.current);
         setIsSpeaking(false);
         setEngineStatus('idle');
-        audioCtx.close();
       };
       
       source.start(0);
     } catch (err) {
-      console.error("AudioContext failed, using fallback:", err);
-      const audioUrl = URL.createObjectURL(blob);
-      const audio = new Audio(audioUrl);
+      console.error("AudioContext failed", err);
+      const audio = new Audio(URL.createObjectURL(blob));
       audio.onended = () => {
         if (watchdogRef.current) clearTimeout(watchdogRef.current);
         setIsSpeaking(false);
         setEngineStatus('idle');
-        URL.revokeObjectURL(audioUrl);
       };
-      audio.play().catch(e => {
-        console.error("Fallback audio play failed:", e);
+      audio.play().catch(() => {
         setIsSpeaking(false);
         setEngineStatus('idle');
       });
     }
   };
 
-  return { speakText, isSpeaking, isGeneratingVoice, error, engineStatus, progress, chunkCount };
+  const forceReset = () => {
+    if (watchdogRef.current) clearTimeout(watchdogRef.current);
+    setIsSpeaking(false);
+    setIsGeneratingVoice(false);
+    setEngineStatus('idle');
+  };
+
+  return { speakText, isSpeaking, isGeneratingVoice, error, engineStatus, progress, chunkCount, forceReset };
 }
