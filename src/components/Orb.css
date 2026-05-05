@@ -143,3 +143,36 @@
   color: rgba(255, 255, 255, 0.8);
   letter-spacing: 3px;
 }
+
+.orb-timer {
+  position: absolute;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 24px;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  z-index: 10;
+  pointer-events: none;
+  letter-spacing: 1px;
+}
+
+.active-listening .orb-main {
+  background: linear-gradient(135deg, #00ffcc 0%, #00d2ff 50%, #3a7bd5 100%);
+  box-shadow: 
+    0 0 60px rgba(0, 255, 204, 0.6),
+    0 0 100px rgba(0, 210, 255, 0.4);
+  animation: fluid 10s infinite alternate ease-in-out, breathe-listening 2s infinite ease-in-out;
+}
+
+@keyframes breathe-listening {
+  0% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.05); filter: brightness(1.2); }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+
+.active-listening .orb-label {
+  color: #00ffcc;
+  text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
+  letter-spacing: 4px;
+}
+

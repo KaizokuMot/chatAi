@@ -7,9 +7,8 @@ interface OrbProps {
   isListening?: boolean;
   status?: string;
   progress?: number;
-  chunkCount?: number;
-  onStart: () => void;
-  onEnd: () => void;
+  duration?: string;
+  onToggle: () => void;
 }
 
 const Orb: React.FC<OrbProps> = ({ 
@@ -18,22 +17,21 @@ const Orb: React.FC<OrbProps> = ({
   isListening, 
   status, 
   progress,
-  onStart, 
-  onEnd 
+  duration,
+  onToggle 
 }) => {
 
   return (
     <div 
-      className="orb-container" 
-      onMouseDown={onStart}
-      onMouseUp={onEnd}
-      onMouseLeave={onEnd}
-      onTouchStart={(e) => { e.preventDefault(); onStart(); }}
-      onTouchEnd={(e) => { e.preventDefault(); onEnd(); }}
+      className={`orb-container ${isListening ? 'active-listening' : ''}`} 
+      onClick={onToggle}
     >
       <div className={`orb-main ${isPlaying ? 'pulsing' : ''} ${isGenerating ? 'generating' : ''} ${isListening ? 'listening' : ''}`}>
         <div className="orb-inner"></div>
         <div className="orb-glow"></div>
+        {(isListening || isPlaying) && duration && (
+          <div className="orb-timer">{duration}</div>
+        )}
         {isListening && (
           <>
             <div className="listening-ring"></div>
@@ -55,9 +53,11 @@ const Orb: React.FC<OrbProps> = ({
           : (status === 'generating' || status === 'processing' || isGenerating)
             ? `Warming up... ${progress}%`
             : isListening
-              ? 'KEEP HOLDING...'
-              : 'HOLD TO TALK'}
+              ? 'TAP TO SEND'
+              : 'TAP TO TALK'}
       </div>
+    </div>
+
 
 
     </div>

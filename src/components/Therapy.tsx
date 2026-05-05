@@ -155,8 +155,32 @@ const Therapy: React.FC = () => {
     }
   };
 
+  const [recordingDuration, setRecordingDuration] = useState(0);
+  const timerRef = useRef<any>(null);
+
+
+  useEffect(() => {
+    if (isListening || isSpeaking) {
+      timerRef.current = setInterval(() => {
+        setRecordingDuration(prev => prev + 1);
+      }, 1000);
+    } else {
+      if (timerRef.current) clearInterval(timerRef.current);
+      setRecordingDuration(0);
+    }
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [isListening, isSpeaking]);
+
+  const formatDuration = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
   const startListening = () => {
-    if (recognitionRef.current && !isListening && !isSpeaking && !isGenerating) {
+    if (recognitionRef.current && !isListening && !isSpeaking && !isGenerating && !isGeneratingVoice) {
       try {
         setInterimTranscript('');
         recognitionRef.current.start();
@@ -172,8 +196,15 @@ const Therapy: React.FC = () => {
     }
   };
 
+  const toggleListening = () => {
+    if (isSpeaking || isGenerating || isGeneratingVoice) return;
+    if (isListening) stopListening();
+    else startListening();
+  };
+
+
   const greetUser = async () => {
-    const greeting = "Hey! My name is Dixon It's a pleasure to meet you. To get started, may I ask your name?";
+    const greeting = "Hey! My name is Dixon. It's a pleasure to meet you. To get started, may I ask your name?";
     setMessages([{ role: 'assistant', content: greeting }]);
     speakText(greeting);
   };
@@ -352,9 +383,10 @@ const Therapy: React.FC = () => {
               status={engineStatus}
               progress={progress}
               chunkCount={chunkCount}
-              onStart={startListening}
-              onEnd={stopListening}
+              duration={formatDuration(recordingDuration)}
+              onToggle={toggleListening}
             />
+
 
 
           )}
