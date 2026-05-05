@@ -53,7 +53,7 @@ const Orb: React.FC<OrbProps> = ({
         {isPlaying
           ? (status?.toUpperCase() || 'SPEAKING...')
           : (status === 'generating' || status === 'processing' || isGenerating)
-            ? `PISTONS FIRING... ${progress}%`
+            ? `Warming up... ${progress}%`
             : isListening
               ? 'KEEP HOLDING...'
               : 'HOLD TO TALK'}
