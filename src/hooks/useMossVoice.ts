@@ -31,19 +31,25 @@ export function useMossVoice() {
     // 1. Split text into smaller chunks (sentences) for faster first-response
     const sentences = fullText.match(/[^.!?]+[.!?]+/g) || [fullText];
     
+    setError(null);
     setIsGeneratingVoice(true);
     setEngineStatus('warming up...');
     setProgress(0);
-    setChunkCount(0);
+    setChunkCount(sentences.length);
     prepareAudio();
 
     // Reset queue
     audioQueue.current = [];
     isPlayingQueue.current = false;
 
-    // Generate each sentence (for now we generate the full text but we could loop)
-    // To truly optimize, we would send multiple small requests, but let's optimize the single flow first
-    await processText(fullText);
+    // Generate each sentence for faster first-response
+    for (let i = 0; i < sentences.length; i++) {
+      try {
+        await processText(sentences[i].trim());
+      } catch (err: any) {
+        setError(`Error processing sentence ${i + 1}: ${err.message || 'Unknown error'}`);
+      }
+    }
   };
 
   const processText = async (text: string) => {
@@ -55,6 +61,10 @@ export function useMossVoice() {
       const socket = new WebSocket(wsUrl);
       socket.onopen = () => {
         socket.send(JSON.stringify({ text, voice: "Dixon" }));
+      };
+
+      socket.onerror = (event) => {
+        setError('WebSocket connection failed');
       };
 
       socket.onmessage = (event) => {
@@ -71,7 +81,9 @@ export function useMossVoice() {
               socket.close();
             }
           }
-        } catch (e) {}
+        } catch (e) {
+          setError('Failed to parse server response');
+        }
       };
 
       fetch(apiTtsUrl, {
@@ -79,9 +91,12 @@ export function useMossVoice() {
         headers: { 'Content-Type': 'application/json', 'bypass-tunnel-reminder': 'true' },
         credentials: 'include',
         body: JSON.stringify({ text })
-      }).catch(() => {});
+      }).catch((err) => {
+        setError('TTS API request failed');
+      });
 
     } catch (err: any) {
+      setError(err.message || 'Text processing failed');
       setIsGeneratingVoice(false);
       setEngineStatus('idle');
     }
@@ -96,8 +111,11 @@ export function useMossVoice() {
       if (resp.ok) {
         const blob = await resp.blob();
         playAudioFromBlob(blob);
+      } else {
+        setError(`Failed to fetch audio: ${resp.statusText}`);
       }
-    } catch (e) {
+    } catch (e: any) {
+      setError(`Audio fetch failed: ${e.message || 'Unknown error'}`);
       setIsGeneratingVoice(false);
     }
   };
