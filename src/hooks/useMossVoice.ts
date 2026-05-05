@@ -49,7 +49,7 @@ export function useMossVoice() {
           if (data.chunk !== undefined) setChunkCount(data.chunk);
 
           // Your server sends 'complete' with 'audio_url'
-          if (data.status === 'complete' || data.audio_url) {
+          if (data.status === 'Loading audio...' || data.audio_url) {
             setProgress(100);
             const path = data.audio_url || data.url;
 
