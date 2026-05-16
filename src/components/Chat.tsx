@@ -372,7 +372,70 @@ const Chat: React.FC = () => {
           </div>
         </div>
 
-        <div style={{ flex: 1, padding: '32px', overflowY: 'auto' }}>
+        <div style={{ flex: 1, padding: '32px', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+          {messages.length === 0 && !loading && (
+            <div style={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              textAlign: 'center',
+              padding: '0 24px',
+              animation: 'fadeInEmpty 0.6s ease-out',
+              userSelect: 'none',
+              pointerEvents: 'none',
+            }}>
+              <div style={{
+                width: 56,
+                height: 56,
+                borderRadius: '50%',
+                background: darkMode
+                  ? 'linear-gradient(135deg, rgba(255,140,66,0.15) 0%, rgba(255,179,71,0.08) 100%)'
+                  : 'linear-gradient(135deg, rgba(255,140,66,0.12) 0%, rgba(255,179,71,0.06) 100%)',
+                border: `1.5px solid ${darkMode ? 'rgba(255,140,66,0.25)' : 'rgba(255,140,66,0.2)'}`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: 20,
+                boxShadow: '0 0 32px rgba(255,140,66,0.12)',
+              }}>
+                <RobotOutlined style={{
+                  fontSize: 24,
+                  color: '#ff8c42',
+                }} />
+              </div>
+              <h2 style={{
+                margin: '0 0 10px',
+                fontSize: 22,
+                fontWeight: 700,
+                color: 'var(--text-main)',
+                letterSpacing: '-0.4px',
+                fontFamily: "'Inter', -apple-system, sans-serif",
+              }}>
+                Ready when you are.
+              </h2>
+              <p style={{
+                margin: 0,
+                fontSize: 14,
+                color: 'var(--text-secondary)',
+                lineHeight: 1.65,
+                maxWidth: 320,
+                fontWeight: 400,
+              }}>
+                Ask me anything, from quick ones to deep dives. Type your message below and press <kbd style={{
+                  display: 'inline-block',
+                  padding: '1px 6px',
+                  borderRadius: 5,
+                  fontSize: 12,
+                  fontFamily: 'monospace',
+                  background: darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
+                  border: `1px solid ${darkMode ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)'}`,
+                  color: 'var(--text-secondary)',
+                }}>Enter</kbd> to begin.
+              </p>
+            </div>
+          )}
           {messages.map((item, index) => (
             <div key={item.id || index}>
               {item.sender === 'user' ? (

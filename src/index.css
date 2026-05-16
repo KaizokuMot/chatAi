@@ -288,6 +288,11 @@ body.dark .top-bar-search::placeholder {
   z-index: 999;
 }
 
+@keyframes fadeInEmpty {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 /* Mobile Responsiveness */
 @media (max-width: 992px) {
   .right-sidebar {
