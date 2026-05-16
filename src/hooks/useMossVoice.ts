@@ -10,7 +10,7 @@ function getTtsBaseUrl(): string {
   return (
     localStorage.getItem('ttsUrl') ||
     (import.meta.env.VITE_TTS_URL as string | undefined) ||
-    'https://mdx.tail299d7f.ts.net'
+    'https://53fa-31-14-252-5.ngrok-free.app'
   );
 }
 

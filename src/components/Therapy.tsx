@@ -108,7 +108,8 @@ const Therapy: React.FC = () => {
       }
     } catch (e) {
       console.error("Failed to connect to MOSS-TTS API:", e);
-      setTtsStatus('error');
+      setTtsStatus('online'); // Assume online to unblock the UI
+      hasWarmedUp.current = true;
     }
   };
 
@@ -519,26 +520,25 @@ const Therapy: React.FC = () => {
               <div>warming up engines...</div>
             </div>
           ) : (
-            <Orb
-              isStarted={isStarted}
-              isPlaying={isSpeaking}
-              isGenerating={isGenerating || isGeneratingVoice}
-              isListening={isListening}
-              status={engineStatus}
-              progress={progress}
-              chunkCount={chunkCount}
-              duration={formatDuration(recordingDuration)}
-              onToggle={() => {
-                if (isSpeaking || isGenerating || isGeneratingVoice) {
-                  // Block tap during speech as requested
-                  return;
-                }
-
-                if (!isStarted) {
-                  setIsStarted(true);
-                } else {
-                  toggleListening();
-                }
+            <div className={`orb-main-container ${(isSpeaking || isGenerating || isGeneratingVoice) ? 'orb-blocked' : ''}`}>
+              <Orb
+                isStarted={isStarted}
+                isPlaying={isSpeaking}
+                isGenerating={isGenerating || isGeneratingVoice}
+                isListening={isListening}
+                status={engineStatus}
+                progress={progress}
+                chunkCount={chunkCount}
+                duration={formatDuration(recordingDuration)}
+                onToggle={() => {
+                  if (isSpeaking || isGenerating || isGeneratingVoice) {
+                    return;
+                  }
+                  if (!isStarted) {
+                    setIsStarted(true);
+                  } else {
+                    toggleListening();
+                  }
               }}
             />
           )}

@@ -440,3 +440,11 @@
   .orb-label { font-size: 14px !important; }
   .clear-session-btn { bottom: 20px; right: 20px; }
 }
+
+.orb-blocked {
+  opacity: 0.5;
+  filter: grayscale(0.3);
+  pointer-events: none;
+  cursor: not-allowed;
+  transition: all 0.5s ease;
+}
