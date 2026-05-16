@@ -328,9 +328,15 @@ const Therapy: React.FC = () => {
       abortControllerRef.current = new AbortController();
       const modelName = localStorage.getItem('modelName') || 'gemma3:1b';
 
-      const response = await fetch(apiUrl, {
+      // Ensure we hit the /api/chat endpoint even if the user provided just the base URL
+      const chatUrl = apiUrl.endsWith('/api/chat') ? apiUrl : `${apiUrl.replace(/\/$/, '')}/api/chat`;
+
+      const response = await fetch(chatUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true'
+        },
         signal: abortControllerRef.current.signal,
         body: JSON.stringify({
           model: modelName,
