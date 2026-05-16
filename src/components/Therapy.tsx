@@ -43,6 +43,7 @@ const Therapy: React.FC = () => {
   const [adminSettingsVisible, setAdminSettingsVisible] = useState(false);
   const [currentApiUrl, setCurrentApiUrl] = useState(apiUrl);
   const hasWarmedUp = useRef(false);
+  const lastErrorRef = useRef<{ time: number; type: string } | null>(null);
 
   const abortControllerRef = useRef<AbortController | null>(null);
   const recognitionRef = useRef<any>(null);
@@ -160,8 +161,10 @@ const Therapy: React.FC = () => {
         console.error("Speech Recognition Error:", event.error);
         
         if (event.error === 'network') {
-          // message.warning("Voice network blip. Reconnecting...");
+          console.warn("Network error detected, disabling auto-restart safety.");
+          lastErrorRef.current = { time: Date.now(), type: 'network' };
           setIsListening(false);
+          try { recognition.stop(); } catch(e) {}
         } else if (event.error === 'audio-capture') {
           message.error("Could not access microphone. Please check your system settings.");
           setIsListening(false);
@@ -233,6 +236,12 @@ const Therapy: React.FC = () => {
   };
 
   const startListening = () => {
+    // Cooldown check for network errors
+    if (lastErrorRef.current?.type === 'network' && Date.now() - lastErrorRef.current.time < 3000) {
+      message.warning("Waiting for connection to stabilize...");
+      return;
+    }
+
     if (recognitionRef.current && !isListening && !isSpeaking && !isGenerating && !isGeneratingVoice) {
       try {
         setInterimTranscript('');

@@ -143,18 +143,26 @@ export function useMossVoice() {
         'ngrok-skip-browser-warning': 'true',
       },
       body: JSON.stringify({ 
-        text, 
-        voice: 'Bella',
+          text, 
+        voice: 'Ava',
         cpu_threads: parseInt(localStorage.getItem('tts_cpuThreads') || '7') || 7,
         attn_implementation: localStorage.getItem('tts_attnBackend') || 'model_default',
-        text_temperature: parseFloat(localStorage.getItem('tts_textTemp') || '2') || 2,
-        audio_temperature: parseFloat(localStorage.getItem('tts_audioTemp') || '3') || 3,
-        text_top_p: parseFloat(localStorage.getItem('tts_textTopP') || '1.5') || 1.5,
-        audio_top_p: parseFloat(localStorage.getItem('tts_audioTopP') || '0.95') || 0.95,
-        text_top_k: parseInt(localStorage.getItem('tts_textTopK') || '50') || 50,
-        audio_top_k: parseInt(localStorage.getItem('tts_audioTopK') || '26') || 26,
-        audio_repetition_penalty: parseFloat(localStorage.getItem('tts_audioRepPenalty') || '3') || 3,
-      }),
+        
+        // SPEED FIX 1: Raised to 1.3 so she pushes through sentences faster without lagging
+        text_temperature: parseFloat(localStorage.getItem('tts_textTemp') || '1.3') || 1.3,
+        text_top_p: parseFloat(localStorage.getItem('tts_textTopP') || '1.0') || 1.0, 
+        
+        // SPEED FIX 2: Lowered to 20. Fewer choices means she blurts out the text immediately
+        text_top_k: parseInt(localStorage.getItem('tts_textTopK') || '20') || 20, 
+        
+        // FLOW FIX: 1.05 gives natural human speed and inflections
+        audio_temperature: parseFloat(localStorage.getItem('tts_audioTemp') || '1.3') || 1.3,
+        audio_top_p: parseFloat(localStorage.getItem('tts_audioTopP') || '1.0') || 1.0, 
+        audio_top_k: parseInt(localStorage.getItem('tts_audioTopK') || '35') || 35, 
+        
+        // SMOOTHNESS: Kept low so words flow smoothly together without heavy pauses
+        audio_repetition_penalty: parseFloat(localStorage.getItem('tts_audioRepPenalty') || '1.3') || 1.3,
+        }),
       signal,
     });
     
