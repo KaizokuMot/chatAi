@@ -40,6 +40,7 @@ const Therapy: React.FC = () => {
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
   const [isStarted, setIsStarted] = useState(false);
   const [loginModalVisible, setLoginModalVisible] = useState(false);
+  const [adminSettingsVisible, setAdminSettingsVisible] = useState(false);
   const [currentApiUrl, setCurrentApiUrl] = useState(apiUrl);
   const hasWarmedUp = useRef(false);
 
@@ -261,6 +262,19 @@ const Therapy: React.FC = () => {
   };
 
 
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Secret Shortcut: Ctrl + S (or Alt + S) to open Admin Settings
+      if ((e.ctrlKey || e.altKey) && e.key === 's') {
+        e.preventDefault();
+        setAdminSettingsVisible(prev => !prev);
+        message.info("Admin Controls toggled");
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const greetUser = async () => {
     const greeting = "Hey! My name is Dela. It's a pleasure to meet you. To get started, may I ask your name?";
@@ -517,6 +531,12 @@ const Therapy: React.FC = () => {
         </Button>
       </div>
 
+      <Settings
+        visible={adminSettingsVisible}
+        onClose={() => setAdminSettingsVisible(false)}
+        apiUrl={currentApiUrl}
+        setApiUrl={setCurrentApiUrl}
+      />
       <LoginModal 
         visible={loginModalVisible} 
         onClose={() => setLoginModalVisible(false)} 

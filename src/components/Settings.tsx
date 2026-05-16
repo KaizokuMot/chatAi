@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Form, Input, Typography, Divider, Select, message } from 'antd';
+import { Modal, Form, Input, Typography, Divider, Select, message, Slider } from 'antd';
 import { auth, db } from '../firebase';
 import { updateProfile } from 'firebase/auth';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
@@ -176,9 +176,20 @@ const Settings: React.FC<SettingsProps> = ({ visible, onClose, apiUrl, setApiUrl
         >
           <Input placeholder="https://your-tunnel.loca.lt" />
         </Form.Item>
+
+        <Title level={5}>Voice Interaction</Title>
+        <Form.Item label="Speech Speed" tooltip="Adjust how fast she talks (Web Audio Playback Rate)">
+          <Slider 
+            min={0.5} 
+            max={2.0} 
+            step={0.1}
+            defaultValue={parseFloat(localStorage.getItem('tts_speed') || '1.0')}
+            onChange={(v) => localStorage.setItem('tts_speed', v.toString())}
+          />
+        </Form.Item>
         <Divider />
 
-        <Title level={5}>Advanced Audio Engine Settings</Title>
+        <Title level={5}>Advanced TTS Parameters</Title>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
           <Form.Item name="cpuThreads" label="CPU Threads">
             <Input type="number" placeholder="6" />

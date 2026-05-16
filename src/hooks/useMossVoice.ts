@@ -88,6 +88,11 @@ export function useMossVoice() {
         
         const source = audioCtxRef.current!.createBufferSource();
         source.buffer = audioBuffer;
+        
+        // Apply speech speed from localStorage
+        const speed = parseFloat(localStorage.getItem('tts_speed') || '1.0');
+        source.playbackRate.value = speed;
+
         source.connect(audioCtxRef.current!.destination);
         source.onended = onEnded;
         sourceRef.current = source;
@@ -140,15 +145,15 @@ export function useMossVoice() {
       body: JSON.stringify({ 
         text, 
         voice: 'Bella',
-        cpu_threads: parseInt(localStorage.getItem('tts_cpuThreads') || '6') || 6,
+        cpu_threads: parseInt(localStorage.getItem('tts_cpuThreads') || '7') || 7,
         attn_implementation: localStorage.getItem('tts_attnBackend') || 'model_default',
-        text_temperature: parseFloat(localStorage.getItem('tts_textTemp') || '1.0') || 1.0,
-        audio_temperature: parseFloat(localStorage.getItem('tts_audioTemp') || '0.8') || 0.8,
-        text_top_p: parseFloat(localStorage.getItem('tts_textTopP') || '1.0') || 1.0,
+        text_temperature: parseFloat(localStorage.getItem('tts_textTemp') || '2') || 2,
+        audio_temperature: parseFloat(localStorage.getItem('tts_audioTemp') || '3') || 3,
+        text_top_p: parseFloat(localStorage.getItem('tts_textTopP') || '1.5') || 1.5,
         audio_top_p: parseFloat(localStorage.getItem('tts_audioTopP') || '0.95') || 0.95,
         text_top_k: parseInt(localStorage.getItem('tts_textTopK') || '50') || 50,
-        audio_top_k: parseInt(localStorage.getItem('tts_audioTopK') || '25') || 25,
-        audio_repetition_penalty: parseFloat(localStorage.getItem('tts_audioRepPenalty') || '1.2') || 1.2,
+        audio_top_k: parseInt(localStorage.getItem('tts_audioTopK') || '26') || 26,
+        audio_repetition_penalty: parseFloat(localStorage.getItem('tts_audioRepPenalty') || '3') || 3,
       }),
       signal,
     });

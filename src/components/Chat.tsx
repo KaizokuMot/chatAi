@@ -10,7 +10,6 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { auth, db } from '../firebase';
 import { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, getDocs, deleteDoc, doc } from 'firebase/firestore';
-import Settings from './Settings';
 import LoginModal from './LoginModal';
 import Sidebar from './Sidebar';
 import { SYSTEM_PROMPTS } from '../config/aiPersonality';
@@ -30,14 +29,12 @@ const Chat: React.FC = () => {
   const [loginModalVisible, setLoginModalVisible] = useState(false);
   const [guestMessageCount, setGuestMessageCount] = useState(0);
   const [userMessageCount, setUserMessageCount] = useState(0);
-
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [apiUrl, setApiUrl] = useState(() => {
     const saved = localStorage.getItem('apiUrl');
     if (saved && saved !== "undefined" && saved !== "null" && saved.trim() !== "") return saved;
     return import.meta.env.VITE_OLLAMA_ENDPOINT;
   });
-
   const [serverStatus, setServerStatus] = useState<'checking' | 'online' | 'offline' | 'error'>('online');
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
 
@@ -355,7 +352,6 @@ const Chat: React.FC = () => {
         logout={logout}
         setLoginModalVisible={setLoginModalVisible}
         isDevMode={isDevMode}
-        onSettingsClick={() => setSettingsVisible(true)}
       />
 
       {/* Main Content Area */}
@@ -549,6 +545,10 @@ const Chat: React.FC = () => {
       <LoginModal
         visible={loginModalVisible}
         onClose={() => setLoginModalVisible(false)}
+        onSuccess={() => {
+          setLoginModalVisible(false);
+          attemptSendMessage();
+        }}
       />
     </div>
   );
