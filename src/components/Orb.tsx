@@ -38,8 +38,11 @@ const Orb: React.FC<OrbProps> = ({
         
         {/* Timer separated from fluid background to prevent flicker */}
         <div className="orb-stats-overlay">
-          {(isListening || isPlaying || isGenerating) && duration && (
+          {(isListening || isPlaying || isGenerating) && duration && duration !== "00:00" && (
             <div className="orb-timer-stable">{duration}</div>
+          )}
+          {isGenerating && (!duration || duration === "00:00") && (
+            <div className="orb-timer-stable" style={{ fontSize: '10px', letterSpacing: '1px' }}>CHUNKING...</div>
           )}
         </div>
 

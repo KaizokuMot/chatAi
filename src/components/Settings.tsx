@@ -30,7 +30,6 @@ interface SettingsProps {
 const Settings: React.FC<SettingsProps> = ({ visible, onClose, apiUrl, setApiUrl }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const isDevMode = localStorage.getItem('devMode') === 'true';
 
   useEffect(() => {
     if (visible && auth.currentUser) {

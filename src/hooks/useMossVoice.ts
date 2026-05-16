@@ -206,24 +206,34 @@ export function useMossVoice() {
     setChunkCount(cleaned.length);
     await prepareAudio();
 
+    let nextChunkPromise: Promise<{blob: Blob, normalized: string} | null> | null = null;
+
     for (let i = 0; i < cleaned.length; i++) {
       if (abortRef.current.signal.aborted) break;
       try {
         setEngineStatus(`generating chunk ${i + 1}/${cleaned.length}...`);
         setProgress(Math.round(((i) / cleaned.length) * 100));
 
-        const result = await generateChunk(cleaned[i], abortRef.current.signal);
+        // Use pre-fetched result if it's the one we need, else generate
+        const result = (nextChunkPromise && i > 0) 
+          ? await nextChunkPromise 
+          : await generateChunk(cleaned[i], abortRef.current.signal);
+          
         if (!result) continue;
+
+        // Start pre-fetching the NEXT chunk while this one is about to play
+        if (i + 1 < cleaned.length) {
+          nextChunkPromise = generateChunk(cleaned[i+1], abortRef.current.signal);
+        }
 
         setNormalizedText(result.normalized);
         setProgress(Math.round(((i + 1) / cleaned.length) * 100));
-        // Wait for the chunk to finish playing before generating the next
-        setIsGeneratingVoice(false); // Switch to 'speaking' mode for UI
+        
+        setIsGeneratingVoice(false); 
         await playAudioFromBlob(result.blob);
-        setIsGeneratingVoice(true); // Back to 'generating' mode for next chunk
+        setIsGeneratingVoice(true); 
 
-        // Small pause between sentences
-        await new Promise(res => setTimeout(res, 120));
+        await new Promise(res => setTimeout(res, 80));
       } catch (err: any) {
         if (err?.name === 'AbortError') break;
         const msg = err?.message ?? 'Unknown TTS error';

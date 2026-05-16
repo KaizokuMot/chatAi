@@ -9,7 +9,6 @@ import {
     BarChartOutlined,
     BulbOutlined,
     HeartOutlined,
-    SettingOutlined
 } from '@ant-design/icons';
 import { auth } from '../firebase';
 import { ToolsBanner } from './ToolsUI';
@@ -23,7 +22,6 @@ interface SidebarProps {
     setLoginModalVisible: (visible: boolean) => void;
     isDevMode: boolean;
     hiddenByDefault?: boolean;
-    onSettingsClick?: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -35,7 +33,6 @@ const Sidebar: React.FC<SidebarProps> = ({
     setLoginModalVisible,
     isDevMode,
     hiddenByDefault = false,
-    onSettingsClick
 }) => {
     const navigate = useNavigate();
     const location = useLocation();
@@ -118,12 +115,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                         <BulbOutlined /> <span style={{ marginLeft: 12 }}>{darkMode ? 'Light Mode' : 'Dark Mode'}</span>
                     </div>
 
-                    <div className="menu-item" onClick={() => {
-                        onSettingsClick?.();
-                        setMobileMenuOpen(false);
-                    }}>
-                        <SettingOutlined /> <span style={{ marginLeft: 12 }}>Settings</span>
-                    </div>
+           
                 </div>
 
                 <div style={{ flex: 1 }} />
