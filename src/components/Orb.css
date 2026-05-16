@@ -114,6 +114,7 @@
 
 .orb-spinner {
   position: absolute;
+  top: 60%; /* Move dots below center */
   display: flex;
   gap: 12px;
 }
@@ -146,7 +147,7 @@
 
 .orb-stats-overlay {
   position: absolute;
-  top: 0;
+  top: -30px; /* Offset to prevent overlap with dots */
   left: 0;
   right: 0;
   bottom: 0;

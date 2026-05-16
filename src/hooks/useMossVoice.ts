@@ -196,14 +196,13 @@ export function useMossVoice() {
     if (abortRef.current) abortRef.current.abort();
     abortRef.current = new AbortController();
 
-    const sentences: string[] = fullText.match(/[^.!?]+[.!?]+/g) ?? [fullText];
-    const cleaned = sentences.map(s => s.trim()).filter(Boolean);
+    const cleaned = [fullText.trim()].filter(Boolean);
 
     setError(null);
     setIsGeneratingVoice(true);
-    setEngineStatus('chunking...');
+    setEngineStatus('generating full audio...');
     setProgress(0);
-    setChunkCount(cleaned.length);
+    setChunkCount(1);
     await prepareAudio();
 
     let nextChunkPromise: Promise<{blob: Blob, normalized: string} | null> | null = null;

@@ -39,7 +39,6 @@ const Therapy: React.FC = () => {
   const [ttsStatus, setTtsStatus] = useState<'checking' | 'online' | 'error'>('checking');
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
   const [isStarted, setIsStarted] = useState(false);
-  const [settingsVisible, setSettingsVisible] = useState(false);
   const [loginModalVisible, setLoginModalVisible] = useState(false);
   const [currentApiUrl, setCurrentApiUrl] = useState(apiUrl);
   const hasWarmedUp = useRef(false);
@@ -160,12 +159,8 @@ const Therapy: React.FC = () => {
         console.error("Speech Recognition Error:", event.error);
         
         if (event.error === 'network') {
-          message.warning("Voice network blip. Reconnecting...");
-          setTimeout(() => {
-             if (recognitionRef.current && !isListening) {
-               try { recognitionRef.current.start(); } catch(e) {}
-             }
-          }, 1000);
+          // message.warning("Voice network blip. Reconnecting...");
+          setIsListening(false);
         } else if (event.error === 'audio-capture') {
           message.error("Could not access microphone. Please check your system settings.");
           setIsListening(false);
@@ -384,6 +379,34 @@ const Therapy: React.FC = () => {
         hiddenByDefault={isSidebarHidden}
       />
 
+      {/* Premium Warmup Blocker */}
+      {(!hasWarmedUp.current || ttsStatus === 'checking') && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: darkMode ? 'rgba(11, 12, 16, 0.98)' : 'rgba(255, 255, 255, 0.98)',
+          backdropFilter: 'blur(30px)',
+          WebkitBackdropFilter: 'blur(30px)',
+          zIndex: 9999,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 24,
+          color: darkMode ? '#fff' : '#000'
+        }}>
+          <div className="orb-main pulsing" style={{ width: 100, height: 100 }}>
+             <div className="orb-inner"></div>
+          </div>
+          <div style={{ fontSize: 18, fontWeight: 500, letterSpacing: '1px' }}>
+             Waking up Dela...
+          </div>
+          <div style={{ fontSize: 12, opacity: 0.6 }}>
+             Engines warming up in the background
+          </div>
+        </div>
+      )}
+
       <div className="therapy-main">
         {/* Floating Controls */}
         <div className="therapy-controls">
@@ -494,12 +517,6 @@ const Therapy: React.FC = () => {
         </Button>
       </div>
 
-      <Settings
-        visible={settingsVisible}
-        onClose={() => setSettingsVisible(false)}
-        apiUrl={currentApiUrl}
-        setApiUrl={setCurrentApiUrl}
-      />
       <LoginModal 
         visible={loginModalVisible} 
         onClose={() => setLoginModalVisible(false)} 

@@ -27,7 +27,6 @@ const Chat: React.FC = () => {
   const [messages, setMessages] = useState<MessageData[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [loading, setLoading] = useState(false);
-  const [settingsVisible, setSettingsVisible] = useState(false);
   const [loginModalVisible, setLoginModalVisible] = useState(false);
   const [guestMessageCount, setGuestMessageCount] = useState(0);
   const [userMessageCount, setUserMessageCount] = useState(0);
@@ -356,6 +355,7 @@ const Chat: React.FC = () => {
         logout={logout}
         setLoginModalVisible={setLoginModalVisible}
         isDevMode={isDevMode}
+        onSettingsClick={() => setSettingsVisible(true)}
       />
 
       {/* Main Content Area */}
@@ -446,17 +446,17 @@ const Chat: React.FC = () => {
                 </div>
               ) : (
                 <div className="message-bot">
-                  <div style={{ display: 'flex', marginBottom: 16, alignItems:'anchor-center' }}>
+                  <div style={{ display: 'flex', marginBottom: 16, alignItems: 'anchor-center' }}>
                     <div style={{ background: '#181a1b', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
                       <RobotOutlined style={{ color: '#fff', fontSize: 16 }} />
                     </div>
                     <strong style={{ fontSize: 16 }}>Nano</strong>
                   </div>
-                    <div className="markdown-content" style={{ fontSize: "small", lineHeight: 1.6, color: 'var(--text-main)' }}>
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                        {item.text}
-                      </ReactMarkdown>
-                    </div>
+                  <div className="markdown-content" style={{ fontSize: "small", lineHeight: 1.6, color: 'var(--text-main)' }}>
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {item.text}
+                    </ReactMarkdown>
+                  </div>
                 </div>
               )}
             </div>
@@ -479,8 +479,8 @@ const Chat: React.FC = () => {
                 style={{ display: 'none' }}
                 onChange={handleFileUpload}
               />
-              <PaperClipOutlined 
-                style={{ fontSize: 18, color: 'var(--text-secondary)', cursor: 'pointer' }} 
+              <PaperClipOutlined
+                style={{ fontSize: 18, color: 'var(--text-secondary)', cursor: 'pointer' }}
                 onClick={() => document.getElementById('file-upload')?.click()}
               />
             </div>
@@ -530,7 +530,17 @@ const Chat: React.FC = () => {
           {messages.length === 0 && <div style={{ color: 'var(--text-secondary)', fontSize: 13 }}>No recent history</div>}
         </div>
         <div style={{ padding: 24, paddingBottom: 0 }}>
-          <Button block icon={<DeleteOutlined />} style={{ color: 'var(--text-secondary)', borderColor: 'var(--border-color)' }} onClick={clearHistory}>
+          <Button
+            block
+            icon={<DeleteOutlined />}
+            style={{
+              background: 'var(--bg-card)',
+              color: 'var(--text-secondary)',
+              borderColor: 'var(--border-color)',
+              height: '40px'
+            }}
+            onClick={clearHistory}
+          >
             Clear history
           </Button>
         </div>
@@ -539,17 +549,6 @@ const Chat: React.FC = () => {
       <LoginModal
         visible={loginModalVisible}
         onClose={() => setLoginModalVisible(false)}
-        onSuccess={() => {
-          setLoginModalVisible(false);
-          attemptSendMessage();
-        }}
-      />
-
-      <Settings
-        visible={settingsVisible}
-        onClose={() => setSettingsVisible(false)}
-        apiUrl={apiUrl}
-        setApiUrl={setApiUrl}
       />
     </div>
   );
