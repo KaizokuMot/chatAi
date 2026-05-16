@@ -520,7 +520,6 @@ const Therapy: React.FC = () => {
               progress={progress}
               chunkCount={chunkCount}
               duration={formatDuration(recordingDuration)}
-              normalizedText={normalizedText}
               onToggle={() => {
                 if (isSpeaking || isGenerating || isGeneratingVoice) {
                   // Block tap during speech as requested

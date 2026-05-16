@@ -11,7 +11,6 @@ interface OrbProps {
   chunkCount?: number;
   duration?: string;
   onToggle: () => void;
-  normalizedText?: string | null;
 }
 
 const Orb: React.FC<OrbProps> = ({ 
@@ -22,8 +21,7 @@ const Orb: React.FC<OrbProps> = ({
   status = 'idle', 
   progress = 0,
   duration,
-  onToggle,
-  normalizedText
+  onToggle
 }) => {
 
 
