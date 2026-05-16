@@ -106,13 +106,15 @@ const Therapy: React.FC = () => {
               }).catch(() => { });
 
               // Warmup Brain (Ollama) - nudges it to load model into VRAM
-              const chatUrl = currentApiUrl.endsWith('/api/chat') ? currentApiUrl : `${currentApiUrl.replace(/\/$/, '')}/api/chat`;
+              const chatUrl = (currentApiUrl || '').endsWith('/api/chat') ? currentApiUrl : `${(currentApiUrl || '').replace(/\/$/, '')}/api/chat`;
               const modelName = localStorage.getItem('modelName') || 'gemma3:1b';
-              fetch(chatUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
-                body: JSON.stringify({ model: modelName, messages: [], stream: false, keep_alive: '10m' })
-              }).catch(() => { });
+              if (currentApiUrl) {
+                fetch(chatUrl, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
+                  body: JSON.stringify({ model: modelName, messages: [], stream: false, keep_alive: '10m' })
+                }).catch(() => { });
+              }
             }
         } else {
           setTtsStatus('error');
@@ -523,8 +525,16 @@ const Therapy: React.FC = () => {
           </div>
         )}
 
-        {/* Hero Center - The Orb */}
-        <div className="orb-wrapper">
+        {/* Hero Center - Waveform First, Button Below */}
+        <div className="orb-wrapper" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 30 }}>
+          
+          <div style={{ width: '100%', maxWidth: 500, height: 150 }}>
+            <VoiceWaveform 
+              isActive={isListening} 
+              isDevonSpeaking={isSpeaking} 
+            />
+          </div>
+
           {serverStatus === 'checking' || ttsStatus === 'checking' ? (
             <div className="warming-up">
               <Spin size="large" />
@@ -554,13 +564,6 @@ const Therapy: React.FC = () => {
               />
             </div>
           )}
-          
-          <div style={{ marginTop: 20, width: '100%', maxWidth: 400 }}>
-            <VoiceWaveform 
-              isActive={isListening} 
-              isDevonSpeaking={isSpeaking} 
-            />
-          </div>
         </div>
 
         {/* Reset Action */}

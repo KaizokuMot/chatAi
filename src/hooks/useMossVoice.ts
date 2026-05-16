@@ -160,7 +160,7 @@ export function useMossVoice() {
         // VOICE FIX: Lowered temperature to remove the "peppy" child-like variation
         audio_temperature: 0.8,
         audio_top_p: 1.0,
-        audio_top_k: 2.0, 
+        audio_top_k: 1.0, 
         audio_repetition_penalty: 1.1,
        }),
       signal,

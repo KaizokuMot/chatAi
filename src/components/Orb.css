@@ -10,20 +10,34 @@
 
 .orb-main {
   position: relative;
-  width: 250px;
-  height: 250px;
-  border-radius: 64% 36% 27% 73% / 55% 58% 42% 45%;
-  background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 50%, #8e2de2 100%);
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 
-    0 0 40px rgba(0, 210, 255, 0.4),
-    0 0 80px rgba(142, 45, 226, 0.3),
-    inset 0 0 60px rgba(255, 255, 255, 0.2);
-  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    0 4px 15px rgba(0, 0, 0, 0.2),
+    0 0 20px rgba(0, 210, 255, 0.2);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: breathingPulse 4s infinite ease-in-out;
+  animation: breathingPulse 5s infinite ease-in-out;
   z-index: 5;
+}
+
+.orb-main:hover {
+  transform: scale(1.1);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 30px rgba(0, 210, 255, 0.4);
+}
+
+.orb-icon-overlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
 }
 
 @keyframes breathingPulse {
@@ -149,25 +163,46 @@
   letter-spacing: 3px;
 }
 
+.orb-spinner-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  pointer-events: none;
+}
+
 .orb-stats-overlay {
   position: absolute;
-  top: -30px; /* Offset to prevent overlap with dots */
-  left: 0;
-  right: 0;
-  bottom: 0;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 11;
+  pointer-events: none;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  pointer-events: none;
-  z-index: 10;
 }
 
 .orb-timer-stable {
-  font-family: 'JetBrains Mono', 'Courier New', monospace;
-  font-size: 18px;
-  font-weight: 700;
-  color: white;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+  letter-spacing: 2px;
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.orb-blocked {
+  opacity: 0.8;
+  filter: grayscale(0.5);
+  pointer-events: none;
 }
 
 .not-started .orb-main {

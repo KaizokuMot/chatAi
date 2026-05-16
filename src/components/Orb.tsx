@@ -1,4 +1,6 @@
 import React from 'react';
+import { PlayCircleFilled, PauseOutlined } from '@ant-design/icons';
+import { Spin } from 'antd';
 import './Orb.css';
 
 interface OrbProps {
@@ -19,7 +21,6 @@ const Orb: React.FC<OrbProps> = ({
   isPlaying, 
   isListening, 
   status = 'idle', 
-  progress = 0,
   duration,
   onToggle
 }) => {
@@ -31,46 +32,30 @@ const Orb: React.FC<OrbProps> = ({
       onClick={onToggle}
     >
       <div className={`orb-main ${isPlaying ? 'pulsing' : ''} ${isGenerating ? 'generating' : ''} ${isListening ? 'listening' : ''}`}>
-        <div className="orb-inner"></div>
-        <div className="orb-glow"></div>
         
-        {/* Timer separated from fluid background to prevent flicker */}
-        <div className="orb-stats-overlay">
-          {(isListening || isPlaying || isGenerating) && duration && duration !== "00:00" && (
-            <div className="orb-timer-stable">{duration}</div>
-          )}
-          {isGenerating && (!duration || duration === "00:00") && (
-            <div className="orb-timer-stable" style={{ fontSize: '10px', letterSpacing: '1px' }}>CHUNKING...</div>
-          )}
-        </div>
-
-        {isListening && (
-          <>
-            <div className="listening-ring"></div>
-            <div className="listening-ring"></div>
-            <div className="listening-ring"></div>
-          </>
-        )}
-        {isGenerating && (
-          <div className="orb-spinner">
-            <div className="spinner-dot"></div>
-            <div className="spinner-dot"></div>
-            <div className="spinner-dot"></div>
+        {/* Spinner during processing */}
+        {(isGenerating || status === 'chunking') ? (
+          <div className="orb-spinner-overlay">
+            <Spin size="default" />
+          </div>
+        ) : (
+          <div className="orb-icon-overlay">
+            {!isStarted ? (
+              <PlayCircleFilled style={{ fontSize: 24, color: 'rgba(255,255,255,0.9)' }} />
+            ) : (isListening || isPlaying) ? (
+              <PauseOutlined style={{ fontSize: 24, color: 'rgba(255,255,255,0.9)' }} />
+            ) : (
+              <PlayCircleFilled style={{ fontSize: 24, color: 'rgba(255,255,255,0.9)' }} />
+            )}
           </div>
         )}
-      </div>
-      <div className="orb-label">
-        {!isStarted
-          ? 'TAP TO BEGIN'
-          : isPlaying
-            ? (status?.toUpperCase() || 'SPEAKING...')
-            : isGenerating
-              ? (status === 'idle' || !status ? 'SERVER THINKING...' : `GENERATING... ${progress}%`)
-            : status === 'error'
-              ? 'CONNECTION FAILED'
-              : isListening
-                ? 'TAP TO SEND'
-                : 'TAP TO TALK'}
+
+        {/* Timer separated */}
+        {(isListening || isPlaying) && duration && duration !== "00:00" && (
+          <div className="orb-stats-overlay">
+            <div className="orb-timer-stable">{duration}</div>
+          </div>
+        )}
       </div>
     </div>
   );
