@@ -382,7 +382,6 @@ const Therapy: React.FC = () => {
         setLoginModalVisible={setLoginModalVisible}
         isDevMode={isDevMode}
         hiddenByDefault={isSidebarHidden}
-        onSettingsClick={() => setSettingsVisible(true)}
       />
 
       <div className="therapy-main">

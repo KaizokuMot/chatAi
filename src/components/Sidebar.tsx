@@ -82,7 +82,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                             setMobileMenuOpen(false);
                         }}
                     >
-                        <RobotOutlined /> <span style={{ marginLeft: 12 }}>NanoChat</span>
+                     <span style={{ marginLeft: 12 }}>NanoChat</span>
                     </div>
 
                     {/* Therapy Sessions - New Option */}
@@ -93,7 +93,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                             setMobileMenuOpen(false);
                         }}
                     >
-                        <HeartOutlined /> <span style={{ marginLeft: 12 }}>Therapy Sessions</span>
+                     <span style={{ marginLeft: 12 }}>Voice Chat</span>
                     </div>
 
                     <div className="menu-item disabled">

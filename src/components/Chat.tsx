@@ -356,7 +356,6 @@ const Chat: React.FC = () => {
         logout={logout}
         setLoginModalVisible={setLoginModalVisible}
         isDevMode={isDevMode}
-        onSettingsClick={() => setSettingsVisible(true)}
       />
 
       {/* Main Content Area */}
