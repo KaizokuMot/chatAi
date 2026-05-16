@@ -70,6 +70,9 @@ const Settings: React.FC<SettingsProps> = ({ visible, onClose, apiUrl, setApiUrl
       if (values.modelName) {
         localStorage.setItem('modelName', values.modelName);
       }
+      if (values.ttsUrl) {
+        localStorage.setItem('ttsUrl', values.ttsUrl);
+      }
 
       // 2. Update Profile Settings (if logged in)
       if (auth.currentUser) {
@@ -124,7 +127,8 @@ const Settings: React.FC<SettingsProps> = ({ visible, onClose, apiUrl, setApiUrl
     >
       <Form form={form} layout="vertical" initialValues={{ 
         apiUrl: apiUrl,
-        modelName: localStorage.getItem('modelName') || 'gemma3:1b'
+        modelName: localStorage.getItem('modelName') || 'gemma3:1b',
+        ttsUrl: localStorage.getItem('ttsUrl') || 'https://mdx.tail299d7f.ts.net'
       }}>
         {isDevMode && (
           <>
@@ -147,6 +151,13 @@ const Settings: React.FC<SettingsProps> = ({ visible, onClose, apiUrl, setApiUrl
               rules={[{ required: true, message: 'Please input the model name!' }]}
             >
               <Input placeholder="gemma3:1b" />
+            </Form.Item>
+            <Form.Item
+              name="ttsUrl"
+              label="MOSS-TTS API URL (Tunnel)"
+              extra="Example: https://your-tunnel.loca.lt"
+            >
+              <Input placeholder="https://your-tunnel.loca.lt" />
             </Form.Item>
             <Divider />
           </>

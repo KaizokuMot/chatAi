@@ -29,7 +29,7 @@ const Therapy: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isSidebarHidden, setIsSidebarHidden] = useState(true);
   const [serverStatus, setServerStatus] = useState<'checking' | 'online' | 'error'>('checking');
-  const [gradioStatus, setGradioStatus] = useState<'checking' | 'online' | 'error'>('checking');
+  const [ttsStatus, setTtsStatus] = useState<'checking' | 'online' | 'error'>('checking');
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
 
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -69,10 +69,20 @@ const Therapy: React.FC = () => {
     }
 
     try {
-      setGradioStatus('online');
+      const ttsUrl = localStorage.getItem('ttsUrl') || 'https://mdx.tail299d7f.ts.net';
+      if (!ttsUrl) {
+        setTtsStatus('error');
+      } else {
+        const response = await fetch(`${ttsUrl}/health`, {
+          method: 'GET',
+          headers: { 'ngrok-skip-browser-warning': 'true' }
+        });
+        if (response.ok) setTtsStatus('online');
+        else setTtsStatus('error');
+      }
     } catch (e) {
-      console.error("Failed to connect to Gradio API:", e);
-      setGradioStatus('error');
+      console.error("Failed to connect to MOSS-TTS API:", e);
+      setTtsStatus('error');
     }
   };
 
@@ -98,10 +108,10 @@ const Therapy: React.FC = () => {
     if (serverStatus === 'online' && messages.length === 0) {
       greetUser();
     }
-    if (serverStatus === 'error' || gradioStatus === 'error') {
+    if (serverStatus === 'error' || ttsStatus === 'error') {
       message.error("One or more systems are offline. Dixon might not be able to talk properly.");
     }
-  }, [serverStatus, gradioStatus]);
+  }, [serverStatus, ttsStatus]);
 
 
   const initSpeechRecognition = () => {
@@ -298,9 +308,9 @@ const Therapy: React.FC = () => {
     <>
       <div className="system-status-group">
         <div className={`status-badge ${serverStatus}`}>BRAIN</div>
-        <div className={`status-badge ${gradioStatus}`}>VOICE</div>
+        <div className={`status-badge ${ttsStatus}`}>MOSS</div>
         <div className={`status-badge ${micStatus === 'granted' ? 'online' : micStatus === 'denied' ? 'error' : 'checking'}`}>
-          HEARING: {micStatus.toUpperCase()}
+          MIC: {micStatus.toUpperCase()}
         </div>
         <Button 
           size="small" 
@@ -379,7 +389,7 @@ const Therapy: React.FC = () => {
 
         {/* Hero Center - The Orb */}
         <div className="orb-wrapper">
-          {serverStatus === 'checking' || gradioStatus === 'checking' ? (
+          {serverStatus === 'checking' || ttsStatus === 'checking' ? (
             <div className="warming-up">
               <Spin size="large" />
               <div>warming up engines...</div>
