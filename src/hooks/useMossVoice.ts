@@ -162,7 +162,7 @@ export function useMossVoice() {
         
         // THE CUT-OFF FIX: Raised from 20 to 45. 
         // This gives MOSS enough token choices to trail off gracefully instead of clipping.
-        audio_top_k: parseInt(localStorage.getItem('tts_audioTopK') || '45') || 45, 
+        audio_top_k: parseInt(localStorage.getItem('tts_audioTopK') || '40') || 40, 
         
         // Locked at your required 1.3
         audio_repetition_penalty: parseFloat(localStorage.getItem('tts_audioRepPenalty') || '1.3') || 1.3,
