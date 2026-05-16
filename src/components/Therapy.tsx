@@ -64,7 +64,7 @@ const Therapy: React.FC = () => {
     }
 
     try {
-      const baseUrl = apiUrl.replace(/\/api\/chat$/, '');
+      const baseUrl = currentApiUrl.replace(/\/api\/chat$/, '');
       const healthUrl = `${baseUrl}/api/health`;
       const response = await fetch(healthUrl, {
         method: 'GET',
@@ -326,7 +326,7 @@ const Therapy: React.FC = () => {
       const modelName = localStorage.getItem('modelName') || 'gemma3:1b';
 
       // Ensure we hit the /api/chat endpoint even if the user provided just the base URL
-      const chatUrl = apiUrl.endsWith('/api/chat') ? apiUrl : `${apiUrl.replace(/\/$/, '')}/api/chat`;
+      const chatUrl = currentApiUrl.endsWith('/api/chat') ? currentApiUrl : `${currentApiUrl.replace(/\/$/, '')}/api/chat`;
 
       const response = await fetch(chatUrl, {
         method: 'POST',
