@@ -8,7 +8,7 @@ import {
     MenuOutlined,
     BarChartOutlined,
     BulbOutlined,
-    HeartOutlined,
+
 } from '@ant-design/icons';
 import { auth } from '../firebase';
 import { ToolsBanner } from './ToolsUI';
