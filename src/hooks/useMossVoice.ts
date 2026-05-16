@@ -209,7 +209,12 @@ export function useMossVoice() {
     if (abortRef.current) abortRef.current.abort();
     abortRef.current = new AbortController();
 
-    const cleaned = [fullText.trim()].filter(Boolean);
+    // PARAGRAPH CHUNKING: Splits by paragraphs to bypass the 512-token engine limit 
+    // while keeping sentences fluid within each block.
+    const cleaned = fullText
+      .split(/\n\n+/)
+      .map(s => s.trim())
+      .filter(s => s.length > 0);
 
     setError(null);
     setIsGeneratingVoice(true);
@@ -288,6 +293,7 @@ export function useMossVoice() {
     isGeneratingVoice,
     error,
     engineStatus,
+    setEngineStatus,
     progress,
     chunkCount,
     normalizedText,

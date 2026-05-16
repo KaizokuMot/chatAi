@@ -65,7 +65,9 @@ const Orb: React.FC<OrbProps> = ({
           : isPlaying
             ? (status?.toUpperCase() || 'SPEAKING...')
             : isGenerating
-              ? (status === 'idle' || !status ? 'THINKING...' : `GENERATING... ${progress}%`)
+              ? (status === 'idle' || !status ? 'SERVER THINKING...' : `GENERATING... ${progress}%`)
+            : status === 'error'
+              ? 'CONNECTION FAILED'
               : isListening
                 ? 'TAP TO SEND'
                 : 'TAP TO TALK'}

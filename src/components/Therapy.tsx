@@ -24,6 +24,7 @@ const Therapy: React.FC = () => {
     isSpeaking,
     isGeneratingVoice,
     engineStatus,
+    setEngineStatus,
     progress,
     chunkCount,
     forceReset
@@ -163,8 +164,13 @@ const Therapy: React.FC = () => {
       };
 
       recognition.onend = () => {
-        setIsListening(false);
         console.log("Speech Recognition ended");
+        // AUTO-RESUME: If the browser stops it but we are still in "Listen Mode", restart!
+        if (isListening && !isGenerating && !isSpeaking) {
+           try { recognition.start(); } catch(e) {}
+        } else if (!isListening) {
+           console.log("Mic turned off by user.");
+        }
       };
 
       recognition.onerror = (event: any) => {
@@ -349,10 +355,13 @@ const Therapy: React.FC = () => {
         const botResponse = data.message?.content || "I am here to listen.";
         setMessages(prev => [...prev, { role: 'assistant', content: botResponse }]);
         speakText(botResponse);
+      } else {
+        setEngineStatus('error');
       }
     } catch (err) {
       if (!(err instanceof Error && err.name === 'AbortError')) {
         console.error("API Error:", err);
+        setEngineStatus('error');
       }
     } finally {
       setIsGenerating(false);
