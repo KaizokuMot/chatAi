@@ -49,11 +49,6 @@ const Therapy: React.FC = () => {
   const recognitionRef = useRef<any>(null);
 
   const checkSystemHealth = async () => {
-    // Safety timeout: if health checks take > 5s, let the UI load anyway (with error status)
-    // const timeout = setTimeout(() => {
-    //   if (ttsStatus === 'checking') setTtsStatus('error');
-    //   if (serverStatus === 'checking') setServerStatus('error');
-    // }, 5000);
 
 
     // Check Microphone permissions
