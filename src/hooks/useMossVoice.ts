@@ -17,7 +17,7 @@ function getTtsBaseUrl(): string {
 // ---------------------------------------------------------------------------
 // useMossVoice
 //  Calls POST /api/tts  → returns a WAV blob → plays via AudioContext
-//  No streaming, no WebSocket.  Voice is always "Dixon" (dixon.wav preset).
+//  No streaming, no WebSocket.  Voice is always "Della" (bella.wav preset).
 // ---------------------------------------------------------------------------
 export function useMossVoice() {
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -26,6 +26,7 @@ export function useMossVoice() {
   const [engineStatus, setEngineStatus] = useState<string>('idle');
   const [progress, setProgress] = useState<number>(0);
   const [chunkCount, setChunkCount] = useState<number>(0);
+  const [normalizedText, setNormalizedText] = useState<string | null>(null);
 
   const audioCtxRef = useRef<AudioContext | null>(null);
   const watchdogRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -57,9 +58,9 @@ export function useMossVoice() {
   // -------------------------------------------------------------------------
   const playAudioFromBlob = useCallback((blob: Blob) => {
     return new Promise<void>(async (resolve) => {
-      setIsGeneratingVoice(false);
+      console.log(`[useMossVoice] Playing audio blob of size: ${blob.size} bytes`);
+      setEngineStatus('decoding...');
       setIsSpeaking(true);
-      setEngineStatus('speaking...');
 
       if (watchdogRef.current) clearTimeout(watchdogRef.current);
       watchdogRef.current = setTimeout(() => {
@@ -80,27 +81,37 @@ export function useMossVoice() {
       try {
         await prepareAudio();
         const arrayBuffer = await blob.arrayBuffer();
+        console.log(`[useMossVoice] Decoding audio data...`);
         const audioBuffer = await audioCtxRef.current!.decodeAudioData(arrayBuffer);
+        console.log(`[useMossVoice] Audio decoded successfully. Duration: ${audioBuffer.duration.toFixed(2)}s`);
+        setEngineStatus('speaking...');
+        
         const source = audioCtxRef.current!.createBufferSource();
         source.buffer = audioBuffer;
         source.connect(audioCtxRef.current!.destination);
         source.onended = onEnded;
         sourceRef.current = source;
         source.start(0);
-      } catch {
+      } catch (err) {
+        console.warn('[useMossVoice] WebAudio decode failed, falling back to HTML Audio:', err);
         // Fallback to HTML audio element
         const url = URL.createObjectURL(blob);
         const audio = new Audio(url);
         audioRef.current = audio;
         audio.onended = () => {
+          console.log('[useMossVoice] HTML Audio playback ended');
           URL.revokeObjectURL(url);
           onEnded();
         };
-        audio.onerror = () => {
+        audio.onerror = (e) => {
+          console.error('[useMossVoice] HTML Audio error:', e);
           URL.revokeObjectURL(url);
           onEnded();
         };
-        audio.play().catch(() => onEnded());
+        audio.play().catch(e => {
+          console.error('[useMossVoice] HTML Audio play blocked:', e);
+          onEnded();
+        });
       }
     });
   }, []);
@@ -108,9 +119,16 @@ export function useMossVoice() {
   // -------------------------------------------------------------------------
   // Generate a single chunk of text via POST /api/tts
   // -------------------------------------------------------------------------
-  const generateChunk = useCallback(async (text: string, signal: AbortSignal): Promise<Blob | null> => {
+  const generateChunk = useCallback(async (text: string, signal: AbortSignal): Promise<{blob: Blob, normalized: string} | null> => {
     const baseUrl = getTtsBaseUrl();
     const url = `${baseUrl}/api/tts`;
+
+    console.log(`[useMossVoice] Generating chunk: "${text.substring(0, 30)}..." at ${url}`);
+    
+    // Create a timeout signal for the request (30 seconds per sentence)
+    const timeoutId = setTimeout(() => {
+      // We don't abort the main signal, just this individual chunk if it takes too long
+    }, 30000);
 
     const response = await fetch(url, {
       method: 'POST',
@@ -119,15 +137,54 @@ export function useMossVoice() {
         'bypass-tunnel-reminder': 'true',
         'ngrok-skip-browser-warning': 'true',
       },
-      body: JSON.stringify({ text, voice: 'Dixon' }),
+      body: JSON.stringify({ 
+        text, 
+        voice: 'Bella',
+        cpu_threads: parseInt(localStorage.getItem('tts_cpuThreads') || '6') || 6,
+        attn_implementation: localStorage.getItem('tts_attnBackend') || 'model_default',
+        text_temperature: parseFloat(localStorage.getItem('tts_textTemp') || '1.0') || 1.0,
+        audio_temperature: parseFloat(localStorage.getItem('tts_audioTemp') || '0.8') || 0.8,
+        text_top_p: parseFloat(localStorage.getItem('tts_textTopP') || '1.0') || 1.0,
+        audio_top_p: parseFloat(localStorage.getItem('tts_audioTopP') || '0.95') || 0.95,
+        text_top_k: parseInt(localStorage.getItem('tts_textTopK') || '50') || 50,
+        audio_top_k: parseInt(localStorage.getItem('tts_audioTopK') || '25') || 25,
+        audio_repetition_penalty: parseFloat(localStorage.getItem('tts_audioRepPenalty') || '1.2') || 1.2,
+      }),
       signal,
     });
+    
+    clearTimeout(timeoutId);
+    console.log(`[useMossVoice] Chunk response status: ${response.status}`);
 
     if (!response.ok) {
       throw new Error(`TTS server error ${response.status}: ${response.statusText}`);
     }
 
-    return response.blob();
+    const contentType = response.headers.get('content-type');
+    console.log(`[useMossVoice] Content-Type: ${contentType}`);
+    
+    // CASE 1: New JSON API (with metadata)
+    if (contentType?.includes('application/json')) {
+      const data = await response.json();
+      if (data.status === 'success' && data.audio_base64) {
+        const binaryString = window.atob(data.audio_base64);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        return {
+          blob: new Blob([bytes], { type: 'audio/wav' }),
+          normalized: data.normalized_text
+        };
+      }
+    } 
+    
+    // CASE 2: Legacy Binary API (raw WAV)
+    const blob = await response.blob();
+    return {
+      blob,
+      normalized: text // Fallback to original text if server is old
+    };
   }, []);
 
   // -------------------------------------------------------------------------
@@ -144,7 +201,7 @@ export function useMossVoice() {
 
     setError(null);
     setIsGeneratingVoice(true);
-    setEngineStatus('generating...');
+    setEngineStatus('chunking...');
     setProgress(0);
     setChunkCount(cleaned.length);
     await prepareAudio();
@@ -155,12 +212,15 @@ export function useMossVoice() {
         setEngineStatus(`generating chunk ${i + 1}/${cleaned.length}...`);
         setProgress(Math.round(((i) / cleaned.length) * 100));
 
-        const blob = await generateChunk(cleaned[i], abortRef.current.signal);
-        if (!blob) continue;
+        const result = await generateChunk(cleaned[i], abortRef.current.signal);
+        if (!result) continue;
 
+        setNormalizedText(result.normalized);
         setProgress(Math.round(((i + 1) / cleaned.length) * 100));
         // Wait for the chunk to finish playing before generating the next
-        await playAudioFromBlob(blob);
+        setIsGeneratingVoice(false); // Switch to 'speaking' mode for UI
+        await playAudioFromBlob(result.blob);
+        setIsGeneratingVoice(true); // Back to 'generating' mode for next chunk
 
         // Small pause between sentences
         await new Promise(res => setTimeout(res, 120));
@@ -169,6 +229,9 @@ export function useMossVoice() {
         const msg = err?.message ?? 'Unknown TTS error';
         setError(msg);
         console.error('[useMossVoice] chunk error:', msg);
+        setIsGeneratingVoice(false);
+        setEngineStatus('error');
+        break; // Stop if there's an error
       }
     }
 
@@ -205,6 +268,7 @@ export function useMossVoice() {
     engineStatus,
     progress,
     chunkCount,
+    normalizedText,
     forceReset,
   };
 }

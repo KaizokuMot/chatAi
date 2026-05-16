@@ -1,13 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button, message, Spin, Popover } from 'antd';
 import { MenuFoldOutlined, MenuUnfoldOutlined, CloseOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { auth } from '../firebase';
+import LoginModal from './LoginModal';
 import Sidebar from './Sidebar';
+import Settings from './Settings';
 import Orb from './Orb';
 import { useMossVoice } from '../hooks/useMossVoice';
 import { SYSTEM_PROMPTS } from '../config/aiPersonality';
 import './Therapy.css';
 
 const Therapy: React.FC = () => {
+  const apiUrl = localStorage.getItem('apiUrl') || import.meta.env.VITE_OLLAMA_ENDPOINT;
+  const isDevMode = localStorage.getItem('devMode') === 'true';
+
   const [userName, setUserName] = useState<string | null>(localStorage.getItem('therapy_user_name'));
   const [messages, setMessages] = useState<{ role: string, content: string }[]>([]);
   const [lastUserTranscript, setLastUserTranscript] = useState<string | null>(null);
@@ -20,6 +26,7 @@ const Therapy: React.FC = () => {
     engineStatus, 
     progress, 
     chunkCount,
+    normalizedText,
     forceReset
   } = useMossVoice();
 
@@ -31,12 +38,14 @@ const Therapy: React.FC = () => {
   const [serverStatus, setServerStatus] = useState<'checking' | 'online' | 'error'>('checking');
   const [ttsStatus, setTtsStatus] = useState<'checking' | 'online' | 'error'>('checking');
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
+  const [isStarted, setIsStarted] = useState(false);
+  const [settingsVisible, setSettingsVisible] = useState(false);
+  const [loginModalVisible, setLoginModalVisible] = useState(false);
+  const [currentApiUrl, setCurrentApiUrl] = useState(apiUrl);
+  const hasWarmedUp = useRef(false);
 
   const abortControllerRef = useRef<AbortController | null>(null);
   const recognitionRef = useRef<any>(null);
-
-  const apiUrl = localStorage.getItem('apiUrl') || import.meta.env.VITE_OLLAMA_ENDPOINT;
-  const isDevMode = localStorage.getItem('devMode') === 'true';
 
   const checkSystemHealth = async () => {
     // Check Microphone permissions
@@ -77,8 +86,22 @@ const Therapy: React.FC = () => {
           method: 'GET',
           headers: { 'ngrok-skip-browser-warning': 'true' }
         });
-        if (response.ok) setTtsStatus('online');
-        else setTtsStatus('error');
+        if (response.ok) {
+          const data = await response.json();
+          console.log("[Therapy] Health check success:", data);
+          setTtsStatus('online');
+          // Trigger silent warmup in background (ONLY ONCE)
+          if (!hasWarmedUp.current) {
+            hasWarmedUp.current = true;
+            console.log("[Therapy] Triggering background TTS warmup...");
+            fetch(`${ttsUrl}/api/tts/warmup`, { 
+              method: 'POST', 
+              headers: { 'ngrok-skip-browser-warning': 'true' } 
+            }).catch(() => {});
+          }
+        } else {
+          setTtsStatus('error');
+        }
       }
     } catch (e) {
       console.error("Failed to connect to MOSS-TTS API:", e);
@@ -105,19 +128,20 @@ const Therapy: React.FC = () => {
   }, [darkMode]);
 
   useEffect(() => {
-    if (serverStatus === 'online' && messages.length === 0) {
+    if (serverStatus === 'online' && ttsStatus === 'online' && isStarted && messages.length === 0) {
       greetUser();
     }
     if (serverStatus === 'error' || ttsStatus === 'error') {
-      message.error("One or more systems are offline. Dixon might not be able to talk properly.");
+      message.error("One or more systems are offline. Dela might not be able to talk properly.");
     }
-  }, [serverStatus, ttsStatus]);
+  }, [serverStatus, ttsStatus, isStarted]);
 
 
   const initSpeechRecognition = () => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (SpeechRecognition) {
       const recognition = new SpeechRecognition();
+      recognitionRef.current = recognition;
       recognition.continuous = true;
       recognition.interimResults = true;
       recognition.lang = 'en-US';
@@ -134,13 +158,21 @@ const Therapy: React.FC = () => {
 
       recognition.onerror = (event: any) => {
         console.error("Speech Recognition Error:", event.error);
+        
         if (event.error === 'network') {
           message.warning("Voice network blip. Reconnecting...");
           setTimeout(() => {
-             if (!isListening) recognition.start();
+             if (recognitionRef.current && !isListening) {
+               try { recognitionRef.current.start(); } catch(e) {}
+             }
           }, 1000);
+        } else if (event.error === 'audio-capture') {
+          message.error("Could not access microphone. Please check your system settings.");
+          setIsListening(false);
+          // Do NOT auto-restart on capture error
+        } else {
+          setIsListening(false);
         }
-        setIsListening(false);
       };
       
       recognition.onresult = (event: any) => {
@@ -180,10 +212,23 @@ const Therapy: React.FC = () => {
       if (timerRef.current) clearInterval(timerRef.current);
       setRecordingDuration(0);
     }
+  }, [isListening, isSpeaking]); 
+  
+  const logout = () => {
+    if (isDevMode) {
+      localStorage.removeItem('devMode');
+      window.location.reload();
+    } else {
+      auth.signOut();
+      window.location.reload();
+    }
+  };
+
+  useEffect(() => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [isListening, isSpeaking]);
+  }, [isListening, isSpeaking]); // Reverting to 2 dependencies to match previous stable state and avoid HMR errors, isGeneratingVoice is handled by the generation loop state
 
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -223,7 +268,7 @@ const Therapy: React.FC = () => {
 
 
   const greetUser = async () => {
-    const greeting = "Hey! My name is Dixon. It's a pleasure to meet you. To get started, may I ask your name?";
+    const greeting = "Hey! My name is Dela. It's a pleasure to meet you. To get started, may I ask your name?";
     setMessages([{ role: 'assistant', content: greeting }]);
     speakText(greeting);
   };
@@ -273,7 +318,7 @@ const Therapy: React.FC = () => {
       }
     } catch (err) {
       if (!(err instanceof Error && err.name === 'AbortError')) {
-        console.error("Dixon API Error:", err);
+        console.error("API Error:", err);
       }
     } finally {
       setIsGenerating(false);
@@ -333,10 +378,11 @@ const Therapy: React.FC = () => {
         setMobileMenuOpen={setSidebarOpen}
         darkMode={darkMode}
         setDarkMode={setDarkMode}
-        logout={() => { }}
-        setLoginModalVisible={() => { }}
+        logout={logout}
+        setLoginModalVisible={setLoginModalVisible}
         isDevMode={isDevMode}
         hiddenByDefault={isSidebarHidden}
+        onSettingsClick={() => setSettingsVisible(true)}
       />
 
       <div className="therapy-main">
@@ -369,6 +415,14 @@ const Therapy: React.FC = () => {
         </div>
         {/* AI Message Overlay Removed as requested for Voice-only experience */}
 
+        {messages.length > 0 && messages[messages.length - 1].role === 'assistant' && isSpeaking && (
+          <div className="floating-msg-area">
+            <div className="dixon-msg">
+              {messages[messages.length - 1].content}
+            </div>
+          </div>
+        )}
+
         {/* User Transcript Overlay */}
         {lastUserTranscript && (
           <div className="floating-msg-area user-transcript-area">
@@ -396,6 +450,7 @@ const Therapy: React.FC = () => {
             </div>
           ) : (
             <Orb
+              isStarted={isStarted}
               isPlaying={isSpeaking}
               isGenerating={isGenerating || isGeneratingVoice}
               isListening={isListening}
@@ -403,11 +458,16 @@ const Therapy: React.FC = () => {
               progress={progress}
               chunkCount={chunkCount}
               duration={formatDuration(recordingDuration)}
-              onToggle={toggleListening}
+              normalizedText={normalizedText}
+              onToggle={() => {
+                if (!isStarted) {
+                  setIsStarted(true);
+                  // greetUser is triggered by the useEffect observing isStarted
+                } else {
+                  toggleListening();
+                }
+              }}
             />
-
-
-
           )}
         </div>
 
@@ -435,6 +495,17 @@ const Therapy: React.FC = () => {
         </Button>
       </div>
 
+      <Settings
+        visible={settingsVisible}
+        onClose={() => setSettingsVisible(false)}
+        apiUrl={currentApiUrl}
+        setApiUrl={setCurrentApiUrl}
+      />
+      <LoginModal 
+        visible={loginModalVisible} 
+        onClose={() => setLoginModalVisible(false)} 
+        onSuccess={() => window.location.reload()}
+      />
     </div>
   );
 };

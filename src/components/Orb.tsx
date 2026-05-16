@@ -2,6 +2,7 @@ import React from 'react';
 import './Orb.css';
 
 interface OrbProps {
+  isStarted: boolean;
   isGenerating: boolean;
   isPlaying: boolean;
   isListening?: boolean;
@@ -10,30 +11,38 @@ interface OrbProps {
   chunkCount?: number;
   duration?: string;
   onToggle: () => void;
+  normalizedText?: string | null;
 }
 
 const Orb: React.FC<OrbProps> = ({ 
+  isStarted,
   isGenerating, 
   isPlaying, 
   isListening, 
-  status, 
-  progress,
+  status = 'idle', 
+  progress = 0,
   duration,
-  onToggle 
+  onToggle,
+  normalizedText
 }) => {
 
 
   return (
     <div 
-      className={`orb-container ${isListening ? 'active-listening' : ''}`} 
+      className={`orb-container ${isListening ? 'active-listening' : ''} ${!isStarted ? 'not-started' : ''}`} 
       onClick={onToggle}
     >
       <div className={`orb-main ${isPlaying ? 'pulsing' : ''} ${isGenerating ? 'generating' : ''} ${isListening ? 'listening' : ''}`}>
         <div className="orb-inner"></div>
         <div className="orb-glow"></div>
-        {(isListening || isPlaying) && duration && (
-          <div className="orb-timer">{duration}</div>
-        )}
+        
+        {/* Timer separated from fluid background to prevent flicker */}
+        <div className="orb-stats-overlay">
+          {(isListening || isPlaying || isGenerating) && duration && (
+            <div className="orb-timer-stable">{duration}</div>
+          )}
+        </div>
+
         {isListening && (
           <>
             <div className="listening-ring"></div>
@@ -50,13 +59,17 @@ const Orb: React.FC<OrbProps> = ({
         )}
       </div>
       <div className="orb-label">
-        {isPlaying
-          ? (status?.toUpperCase() || 'SPEAKING...')
-          : (status === 'generating' || status === 'processing' || isGenerating)
-            ? `Warming up... ${progress}%`
-            : isListening
-              ? 'TAP TO SEND'
-              : 'TAP TO TALK'}
+        {!isStarted
+          ? 'TAP TO BEGIN'
+          : isPlaying
+            ? (status?.toUpperCase() || 'SPEAKING...')
+            : (status?.includes('generating') || status?.includes('processing') || status?.includes('chunking') || isGenerating)
+              ? (status?.includes('chunk') ? (normalizedText ? `"${normalizedText.substring(0, 30)}..."` : status.toUpperCase()) : `WARMING UP... ${progress}%`)
+              : status?.includes('decoding')
+                ? 'DECODING AUDIO...'
+                : isListening
+                  ? 'TAP TO SEND'
+                  : 'TAP TO TALK'}
       </div>
     </div>
   );

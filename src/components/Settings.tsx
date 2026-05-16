@@ -73,6 +73,17 @@ const Settings: React.FC<SettingsProps> = ({ visible, onClose, apiUrl, setApiUrl
       if (values.ttsUrl) {
         localStorage.setItem('ttsUrl', values.ttsUrl);
       }
+      
+      // Advanced Audio Settings
+      if (values.cpuThreads) localStorage.setItem('tts_cpuThreads', values.cpuThreads);
+      if (values.attnBackend) localStorage.setItem('tts_attnBackend', values.attnBackend);
+      if (values.textTemp) localStorage.setItem('tts_textTemp', values.textTemp);
+      if (values.audioTemp) localStorage.setItem('tts_audioTemp', values.audioTemp);
+      if (values.textTopP) localStorage.setItem('tts_textTopP', values.textTopP);
+      if (values.audioTopP) localStorage.setItem('tts_audioTopP', values.audioTopP);
+      if (values.textTopK) localStorage.setItem('tts_textTopK', values.textTopK);
+      if (values.audioTopK) localStorage.setItem('tts_audioTopK', values.audioTopK);
+      if (values.audioRepPenalty) localStorage.setItem('tts_audioRepPenalty', values.audioRepPenalty);
 
       // 2. Update Profile Settings (if logged in)
       if (auth.currentUser) {
@@ -128,40 +139,92 @@ const Settings: React.FC<SettingsProps> = ({ visible, onClose, apiUrl, setApiUrl
       <Form form={form} layout="vertical" initialValues={{ 
         apiUrl: apiUrl,
         modelName: localStorage.getItem('modelName') || 'gemma3:1b',
-        ttsUrl: localStorage.getItem('ttsUrl') || 'https://mdx.tail299d7f.ts.net'
+        ttsUrl: localStorage.getItem('ttsUrl') || 'https://mdx.tail299d7f.ts.net',
+        cpuThreads: localStorage.getItem('tts_cpuThreads') || '6',
+        attnBackend: localStorage.getItem('tts_attnBackend') || 'model_default',
+        textTemp: localStorage.getItem('tts_textTemp') || '1.0',
+        audioTemp: localStorage.getItem('tts_audioTemp') || '0.8',
+        textTopP: localStorage.getItem('tts_textTopP') || '1.0',
+        audioTopP: localStorage.getItem('tts_audioTopP') || '0.95',
+        textTopK: localStorage.getItem('tts_textTopK') || '50',
+        audioTopK: localStorage.getItem('tts_audioTopK') || '25',
+        audioRepPenalty: localStorage.getItem('tts_audioRepPenalty') || '1.2'
       }}>
-        {isDevMode && (
-          <>
-            <Title level={5}>AI Configuration</Title>
-            <div style={{ marginBottom: 16 }}>
-              <Text type="secondary" style={{ fontSize: 12 }}>
-                Configure your local Ollama connection. (Visible in Dev Mode only)
-              </Text>
-            </div>
-            <Form.Item
-              name="apiUrl"
-              label="Ollama API URL"
-              rules={[{ required: true, message: 'Please input the API URL!' }]}
-            >
-              <Input placeholder="https://your-url.ngrok-free.dev/api/chat" />
-            </Form.Item>
-            <Form.Item
-              name="modelName"
-              label="Ollama Model Name"
-              rules={[{ required: true, message: 'Please input the model name!' }]}
-            >
-              <Input placeholder="gemma3:1b" />
-            </Form.Item>
-            <Form.Item
-              name="ttsUrl"
-              label="MOSS-TTS API URL (Tunnel)"
-              extra="Example: https://your-tunnel.loca.lt"
-            >
-              <Input placeholder="https://your-tunnel.loca.lt" />
-            </Form.Item>
-            <Divider />
-          </>
-        )}
+        <Title level={5}>AI Configuration</Title>
+        <div style={{ marginBottom: 16 }}>
+          <Text type="secondary" style={{ fontSize: 12 }}>
+            Configure your local Ollama connection and MOSS-TTS tunnel.
+          </Text>
+        </div>
+        <Form.Item
+          name="apiUrl"
+          label="Ollama API URL"
+          rules={[{ required: true, message: 'Please input the API URL!' }]}
+        >
+          <Input placeholder="https://your-url.ngrok-free.dev/api/chat" />
+        </Form.Item>
+        <Form.Item
+          name="modelName"
+          label="Ollama Model Name"
+          rules={[{ required: true, message: 'Please input the model name!' }]}
+        >
+          <Input placeholder="gemma3:1b" />
+        </Form.Item>
+        <Form.Item
+          name="ttsUrl"
+          label="MOSS-TTS API URL (Tunnel)"
+          extra="Example: https://your-tunnel.loca.lt"
+        >
+          <Input placeholder="https://your-tunnel.loca.lt" />
+        </Form.Item>
+        <Divider />
+
+        <Title level={5}>Advanced Audio Engine Settings</Title>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <Form.Item name="cpuThreads" label="CPU Threads">
+            <Input type="number" placeholder="6" />
+          </Form.Item>
+          <Form.Item name="attnBackend" label="Attention Backend">
+            <Select>
+              <Option value="model_default">model_default</Option>
+              <Option value="sdpa">sdpa</Option>
+              <Option value="flash_attention_2">flash_attention_2</Option>
+              <Option value="eager">eager</Option>
+            </Select>
+          </Form.Item>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <Form.Item name="textTemp" label="Text Temperature">
+            <Input type="number" step="0.1" placeholder="1.0" />
+          </Form.Item>
+          <Form.Item name="audioTemp" label="Audio Temperature">
+            <Input type="number" step="0.1" placeholder="0.8" />
+          </Form.Item>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <Form.Item name="textTopP" label="Text Top P">
+            <Input type="number" step="0.05" placeholder="1.0" />
+          </Form.Item>
+          <Form.Item name="audioTopP" label="Audio Top P">
+            <Input type="number" step="0.05" placeholder="0.95" />
+          </Form.Item>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <Form.Item name="textTopK" label="Text Top K">
+            <Input type="number" placeholder="50" />
+          </Form.Item>
+          <Form.Item name="audioTopK" label="Audio Top K">
+            <Input type="number" placeholder="25" />
+          </Form.Item>
+        </div>
+
+        <Form.Item name="audioRepPenalty" label="Audio Repetition Penalty">
+          <Input type="number" step="0.1" placeholder="1.2" />
+        </Form.Item>
+        <Divider />
 
         {auth.currentUser && (
           <>

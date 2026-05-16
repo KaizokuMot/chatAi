@@ -144,35 +144,45 @@
   letter-spacing: 3px;
 }
 
-.orb-timer {
+.orb-stats-overlay {
   position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.orb-timer-stable {
   font-family: 'JetBrains Mono', 'Courier New', monospace;
   font-size: 24px;
   font-weight: 700;
   color: white;
-  text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-  z-index: 10;
-  pointer-events: none;
-  letter-spacing: 1px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
 }
 
-.active-listening .orb-main {
-  background: linear-gradient(135deg, #00ffcc 0%, #00d2ff 50%, #3a7bd5 100%);
-  box-shadow: 
-    0 0 60px rgba(0, 255, 204, 0.6),
-    0 0 100px rgba(0, 210, 255, 0.4);
-  animation: fluid 10s infinite alternate ease-in-out, breathe-listening 2s infinite ease-in-out;
+.not-started .orb-main {
+  background: linear-gradient(135deg, #444 0%, #222 100%);
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+  filter: grayscale(1);
+  opacity: 0.8;
 }
 
-@keyframes breathe-listening {
-  0% { transform: scale(1); filter: brightness(1); }
-  50% { transform: scale(1.05); filter: brightness(1.2); }
-  100% { transform: scale(1); filter: brightness(1); }
+.not-started:hover .orb-main {
+  filter: grayscale(0.5);
+  opacity: 1;
+  transform: scale(1.02);
 }
 
-.active-listening .orb-label {
-  color: #00ffcc;
-  text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
-  letter-spacing: 4px;
+.light .orb-label {
+  color: rgba(0, 0, 0, 0.4);
+}
+
+.light .orb-container:hover .orb-label {
+  color: rgba(0, 0, 0, 0.8);
 }
 
