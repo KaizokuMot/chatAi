@@ -525,7 +525,7 @@ const Chat: React.FC = () => {
           ))}
           {messages.length === 0 && <div style={{ color: 'var(--text-secondary)', fontSize: 13 }}>No recent history</div>}
         </div>
-        <div style={{ padding: 24, paddingBottom: 0 }}>
+        <div style={{ padding: 24, paddingBottom: 40 }}>
           <Button
             block
             icon={<DeleteOutlined />}
