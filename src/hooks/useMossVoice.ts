@@ -143,26 +143,30 @@ export function useMossVoice() {
         'ngrok-skip-browser-warning': 'true',
       },
       body: JSON.stringify({ 
-          text, 
+         text, 
         voice: 'Ava',
         cpu_threads: parseInt(localStorage.getItem('tts_cpuThreads') || '7') || 7,
-        attn_implementation: localStorage.getItem('tts_attnBackend') || 'model_default',
         
-        // SPEED FIX 1: Raised to 1.3 so she pushes through sentences faster without lagging
-        text_temperature: parseFloat(localStorage.getItem('tts_textTemp') || '1.3') || 1.3,
+        // MOSS-TTS-Nano natively relies on 'sdpa' for clean CPU processing.
+        // Try changing 'model_default' to 'sdpa' to fix structural glitches.
+        attn_implementation: localStorage.getItem('tts_attnBackend') || 'sdpa',
+        
+        // MOSS SPEED TWEAK: Prevents the "hi... how..." word dragging
+        text_temperature: parseFloat(localStorage.getItem('tts_textTemp') || '1.2') || 1.2,
         text_top_p: parseFloat(localStorage.getItem('tts_textTopP') || '1.0') || 1.0, 
+        text_top_k: parseInt(localStorage.getItem('tts_textTopK') || '25') || 25, 
         
-        // SPEED FIX 2: Lowered to 20. Fewer choices means she blurts out the text immediately
-        text_top_k: parseInt(localStorage.getItem('tts_textTopK') || '20') || 20, 
-        
-        // FLOW FIX: 1.05 gives natural human speed and inflections
-        audio_temperature: parseFloat(localStorage.getItem('tts_audioTemp') || '1.3') || 1.3,
+        // NATURAL INTONATION: Pushed slightly up to eliminate the robotic tone
+        audio_temperature: parseFloat(localStorage.getItem('tts_audioTemp') || '1.1') || 1.1,
         audio_top_p: parseFloat(localStorage.getItem('tts_audioTopP') || '1.0') || 1.0, 
-        audio_top_k: parseInt(localStorage.getItem('tts_audioTopK') || '35') || 35, 
         
-        // SMOOTHNESS: Kept low so words flow smoothly together without heavy pauses
+        // THE CUT-OFF FIX: Raised from 20 to 45. 
+        // This gives MOSS enough token choices to trail off gracefully instead of clipping.
+        audio_top_k: parseInt(localStorage.getItem('tts_audioTopK') || '45') || 45, 
+        
+        // Locked at your required 1.3
         audio_repetition_penalty: parseFloat(localStorage.getItem('tts_audioRepPenalty') || '1.3') || 1.3,
-        }),
+       }),
       signal,
     });
     
