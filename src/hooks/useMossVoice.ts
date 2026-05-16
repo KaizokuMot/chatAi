@@ -90,7 +90,7 @@ export function useMossVoice() {
         source.buffer = audioBuffer;
         
         // Apply speech speed from localStorage
-        const speed = parseFloat(localStorage.getItem('tts_speed') || '1.2');
+        const speed = parseFloat(localStorage.getItem('tts_speed') || '1.1');
         source.playbackRate.value = speed;
 
         source.connect(audioCtxRef.current!.destination);
@@ -160,7 +160,7 @@ export function useMossVoice() {
         // VOICE FIX: Lowered temperature to remove the "peppy" child-like variation
         audio_temperature: 0.8,
         audio_top_p: 1.0,
-        audio_top_k: 25, 
+        audio_top_k: 2.0, 
         audio_repetition_penalty: 1.1,
        }),
       signal,

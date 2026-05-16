@@ -3,6 +3,7 @@ import { Button, message, Spin, Popover } from 'antd';
 import { MenuFoldOutlined, MenuUnfoldOutlined, CloseOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { auth } from '../firebase';
 import LoginModal from './LoginModal';
+import VoiceWaveform from './VoiceWaveform';
 import Sidebar from './Sidebar';
 import Settings from './Settings';
 import Orb from './Orb';
@@ -93,15 +94,26 @@ const Therapy: React.FC = () => {
           const data = await response.json();
           console.log("[Therapy] Health check success:", data);
           setTtsStatus('online');
-          // Trigger silent warmup in background (ONLY ONCE)
-          if (!hasWarmedUp.current) {
-            hasWarmedUp.current = true;
-            console.log("[Therapy] Triggering background TTS warmup...");
-            fetch(`${ttsUrl}/api/tts/warmup`, {
-              method: 'POST',
-              headers: { 'ngrok-skip-browser-warning': 'true' }
-            }).catch(() => { });
-          }
+            // Trigger silent warmup in background (ONLY ONCE)
+            if (!hasWarmedUp.current) {
+              hasWarmedUp.current = true;
+              console.log("[Therapy] Triggering background TTS & Brain warmup...");
+              
+              // Warmup TTS
+              fetch(`${ttsUrl}/api/tts/warmup`, {
+                method: 'POST',
+                headers: { 'ngrok-skip-browser-warning': 'true' }
+              }).catch(() => { });
+
+              // Warmup Brain (Ollama) - nudges it to load model into VRAM
+              const chatUrl = currentApiUrl.endsWith('/api/chat') ? currentApiUrl : `${currentApiUrl.replace(/\/$/, '')}/api/chat`;
+              const modelName = localStorage.getItem('modelName') || 'gemma3:1b';
+              fetch(chatUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
+                body: JSON.stringify({ model: modelName, messages: [], stream: false, keep_alive: '10m' })
+              }).catch(() => { });
+            }
         } else {
           setTtsStatus('error');
         }
@@ -178,14 +190,13 @@ const Therapy: React.FC = () => {
         console.error("Speech Recognition Error:", event.error);
 
         if (event.error === 'network') {
-          console.warn("Network error detected, disabling auto-restart safety.");
-          lastErrorRef.current = { time: Date.now(), type: 'network' };
+          console.warn("Network error: Check Brave settings for Google Speech Services.");
           setIsListening(false);
-          try { recognition.stop(); } catch (e) { }
+          lastErrorRef.current = { time: Date.now(), type: 'network' };
+          message.warning("Mic network error. Please enable 'Google Services for Speech Recognition' in Brave settings.");
         } else if (event.error === 'audio-capture') {
           message.error("Could not access microphone. Please check your system settings.");
           setIsListening(false);
-          // Do NOT auto-restart on capture error
         } else {
           setIsListening(false);
         }
@@ -303,7 +314,7 @@ const Therapy: React.FC = () => {
   }, []);
 
   const greetUser = async () => {
-    const greeting = "Hey! My name is Divon. It's a pleasure to meet you. To get started, may I ask your name?";
+    const greeting = "Good evening. I am Devon, your AI therapy assistant. I am here to provide a safe space for your thoughts. To begin, may I ask your name?";
     setMessages([{ role: 'assistant', content: greeting }]);
     speakText(greeting);
   };
@@ -543,6 +554,13 @@ const Therapy: React.FC = () => {
               />
             </div>
           )}
+          
+          <div style={{ marginTop: 20, width: '100%', maxWidth: 400 }}>
+            <VoiceWaveform 
+              isActive={isListening} 
+              isDevonSpeaking={isSpeaking} 
+            />
+          </div>
         </div>
 
         {/* Reset Action */}
