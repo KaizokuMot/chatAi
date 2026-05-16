@@ -26,7 +26,6 @@ const Therapy: React.FC = () => {
     engineStatus,
     progress,
     chunkCount,
-    normalizedText,
     forceReset
   } = useMossVoice();
 
