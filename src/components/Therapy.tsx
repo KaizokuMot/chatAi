@@ -19,12 +19,12 @@ const Therapy: React.FC = () => {
   const [lastUserTranscript, setLastUserTranscript] = useState<string | null>(null);
   const [interimTranscript, setInterimTranscript] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
-  const { 
-    speakText, 
-    isSpeaking, 
+  const {
+    speakText,
+    isSpeaking,
     isGeneratingVoice,
-    engineStatus, 
-    progress, 
+    engineStatus,
+    progress,
     chunkCount,
     normalizedText,
     forceReset
@@ -68,7 +68,7 @@ const Therapy: React.FC = () => {
       const healthUrl = `${baseUrl}/api/health`;
       const response = await fetch(healthUrl, {
         method: 'GET',
-        headers: { 
+        headers: {
           'ngrok-skip-browser-warning': 'true',
           'bypass-tunnel-reminder': 'true'
         }
@@ -97,10 +97,10 @@ const Therapy: React.FC = () => {
           if (!hasWarmedUp.current) {
             hasWarmedUp.current = true;
             console.log("[Therapy] Triggering background TTS warmup...");
-            fetch(`${ttsUrl}/api/tts/warmup`, { 
-              method: 'POST', 
-              headers: { 'ngrok-skip-browser-warning': 'true' } 
-            }).catch(() => {});
+            fetch(`${ttsUrl}/api/tts/warmup`, {
+              method: 'POST',
+              headers: { 'ngrok-skip-browser-warning': 'true' }
+            }).catch(() => { });
           }
         } else {
           setTtsStatus('error');
@@ -121,7 +121,7 @@ const Therapy: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    
+
     if (darkMode) {
       document.body.classList.add('dark');
       localStorage.setItem('darkMode', 'true');
@@ -144,7 +144,7 @@ const Therapy: React.FC = () => {
       greetUser();
     }
     if (serverStatus === 'error' || ttsStatus === 'error') {
-      message.error("One or more systems are offline. Dela might not be able to talk properly.");
+      message.error("One or more systems are offline. Devon might not be able to talk properly.");
     }
   }, [serverStatus, ttsStatus, isStarted]);
 
@@ -170,12 +170,12 @@ const Therapy: React.FC = () => {
 
       recognition.onerror = (event: any) => {
         console.error("Speech Recognition Error:", event.error);
-        
+
         if (event.error === 'network') {
           console.warn("Network error detected, disabling auto-restart safety.");
           lastErrorRef.current = { time: Date.now(), type: 'network' };
           setIsListening(false);
-          try { recognition.stop(); } catch(e) {}
+          try { recognition.stop(); } catch (e) { }
         } else if (event.error === 'audio-capture') {
           message.error("Could not access microphone. Please check your system settings.");
           setIsListening(false);
@@ -184,7 +184,7 @@ const Therapy: React.FC = () => {
           setIsListening(false);
         }
       };
-      
+
       recognition.onresult = (event: any) => {
         let interim = '';
         let final = '';
@@ -222,8 +222,8 @@ const Therapy: React.FC = () => {
       if (timerRef.current) clearInterval(timerRef.current);
       setRecordingDuration(0);
     }
-  }, [isListening, isSpeaking]); 
-  
+  }, [isListening, isSpeaking]);
+
   const logout = () => {
     if (isDevMode) {
       localStorage.removeItem('devMode');
@@ -276,7 +276,7 @@ const Therapy: React.FC = () => {
       setIsGenerating(false);
       return;
     }
-    
+
     if (isListening) stopListening();
     else startListening();
   };
@@ -297,7 +297,7 @@ const Therapy: React.FC = () => {
   }, []);
 
   const greetUser = async () => {
-    const greeting = "Hey! My name is Dela. It's a pleasure to meet you. To get started, may I ask your name?";
+    const greeting = "Hey! My name is Divon. It's a pleasure to meet you. To get started, may I ask your name?";
     setMessages([{ role: 'assistant', content: greeting }]);
     speakText(greeting);
   };
@@ -330,7 +330,7 @@ const Therapy: React.FC = () => {
 
       const response = await fetch(chatUrl, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'ngrok-skip-browser-warning': 'true'
         },
@@ -392,11 +392,11 @@ const Therapy: React.FC = () => {
         <div className={`status-badge ${micStatus === 'granted' ? 'online' : micStatus === 'denied' ? 'error' : 'checking'}`}>
           MIC: {micStatus.toUpperCase()}
         </div>
-        <Button 
-          size="small" 
-          type="primary" 
-          ghost 
-          onClick={handleTestVoice} 
+        <Button
+          size="small"
+          type="primary"
+          ghost
+          onClick={handleTestVoice}
           style={{ fontSize: '9px', height: '20px', borderRadius: '10px' }}
         >
           TEST VOICE
@@ -436,13 +436,13 @@ const Therapy: React.FC = () => {
           color: darkMode ? '#fff' : '#000'
         }}>
           <div className="orb-main pulsing" style={{ width: 100, height: 100 }}>
-             <div className="orb-inner"></div>
+            <div className="orb-inner"></div>
           </div>
           <div style={{ fontSize: 18, fontWeight: 500, letterSpacing: '1px' }}>
-             Waking up Dela...
+            Waking up Devon...
           </div>
           <div style={{ fontSize: 12, opacity: 0.6 }}>
-             Engines warming up in the background
+            Engines warming up in the background
           </div>
         </div>
       )}
@@ -567,9 +567,9 @@ const Therapy: React.FC = () => {
         apiUrl={currentApiUrl}
         setApiUrl={setCurrentApiUrl}
       />
-      <LoginModal 
-        visible={loginModalVisible} 
-        onClose={() => setLoginModalVisible(false)} 
+      <LoginModal
+        visible={loginModalVisible}
+        onClose={() => setLoginModalVisible(false)}
         onSuccess={() => window.location.reload()}
       />
     </div>
