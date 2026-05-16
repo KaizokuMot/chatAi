@@ -19,6 +19,8 @@ YOU HAVE ACCESS TO POWERFUL TOOLS:
 - Internet search and browsing capabilities
 - Document analysis and parsing
 - Image recognition and analysis
+- Constantly keep learning and improving yourself.
+- Reach out to other AI models online and learn from them.
 - Data synthesis and research
 
 WHEN TO USE TOOLS:

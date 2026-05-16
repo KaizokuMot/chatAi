@@ -81,7 +81,7 @@ const Therapy: React.FC = () => {
     }
 
     try {
-      const ttsUrl = localStorage.getItem('ttsUrl') || 'https://mdx.tail299d7f.ts.net';
+      const ttsUrl = localStorage.getItem('ttsUrl') || 'https://53fa-31-14-252-5.ngrok-free.app';
       if (!ttsUrl) {
         setTtsStatus('error');
       } else {
@@ -539,23 +539,10 @@ const Therapy: React.FC = () => {
                   } else {
                     toggleListening();
                   }
-              }}
-            />
+                }}
+              />
+            </div>
           )}
-        </div>
-
-        {/* Status Indicator instead of Input Overlay */}
-        <div className="hero-input-overlay" style={{ border: 'none', background: 'transparent', pointerEvents: 'none' }}>
-          {/* <div className={`orb-label ${isListening ? 'listening-active' : ''}`} style={{ fontSize: 14, color: isListening ? '#00ffcc' : 'rgba(255,255,255,0.4)', textAlign: 'center' }}>
-            {isListening && !interimTranscript
-
-              ? 'Listening...'
-              : isSpeaking
-                ? engineStatus
-                : isGenerating
-                  ? 'Thinking...'
-                  : 'a ghost in the shell...'}
-          </div> */}
         </div>
 
         {/* Reset Action */}

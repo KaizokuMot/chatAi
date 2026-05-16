@@ -138,7 +138,7 @@ const Settings: React.FC<SettingsProps> = ({ visible, onClose, apiUrl, setApiUrl
       <Form form={form} layout="vertical" initialValues={{ 
         apiUrl: apiUrl,
         modelName: localStorage.getItem('modelName') || 'gemma3:1b',
-        ttsUrl: localStorage.getItem('ttsUrl') || 'https://mdx.tail299d7f.ts.net',
+        ttsUrl: localStorage.getItem('ttsUrl') || 'https://53fa-31-14-252-5.ngrok-free.app/',
         cpuThreads: localStorage.getItem('tts_cpuThreads') || '6',
         attnBackend: localStorage.getItem('tts_attnBackend') || 'model_default',
         textTemp: localStorage.getItem('tts_textTemp') || '1.0',
