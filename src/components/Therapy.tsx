@@ -129,6 +129,14 @@ const Therapy: React.FC = () => {
   }, [darkMode]);
 
   useEffect(() => {
+    // Auto-start greeting once everything is ready
+    if (serverStatus === 'online' && ttsStatus === 'online' && !isStarted) {
+      setIsStarted(true);
+      // greetUser() will be triggered by the next effect
+    }
+  }, [serverStatus, ttsStatus, isStarted]);
+
+  useEffect(() => {
     if (serverStatus === 'online' && ttsStatus === 'online' && isStarted && messages.length === 0) {
       greetUser();
     }
@@ -505,9 +513,13 @@ const Therapy: React.FC = () => {
               duration={formatDuration(recordingDuration)}
               normalizedText={normalizedText}
               onToggle={() => {
+                if (isSpeaking || isGenerating || isGeneratingVoice) {
+                  // Block tap during speech as requested
+                  return;
+                }
+
                 if (!isStarted) {
                   setIsStarted(true);
-                  // greetUser is triggered by the useEffect observing isStarted
                 } else {
                   toggleListening();
                 }
