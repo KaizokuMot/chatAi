@@ -152,15 +152,15 @@ export function useMossVoice() {
         attn_implementation: localStorage.getItem('tts_attnBackend') || 'sdpa',
         
         // MOSS SPEED TWEAK: Prevents the "hi... how..." word dragging
-        // STABILITY FIX: Lowered temperature to prevent slurring/stuttering
-        text_temperature: 1.0,
+        // MATURITY FIX: Stabilized pitch and vocabulary for an adult tone
+        text_temperature: 0.9,
         text_top_p: 1.0, 
-        text_top_k: 20, 
+        text_top_k: 25, 
         
-        // FLUIDITY FIX: Lowered penalty to allow natural phonetic transitions
-        audio_temperature: 1.0,
+        // VOICE FIX: Lowered temperature to remove the "peppy" child-like variation
+        audio_temperature: 0.8,
         audio_top_p: 1.0,
-        audio_top_k: 20, 
+        audio_top_k: 25, 
         audio_repetition_penalty: 1.1,
        }),
       signal,
