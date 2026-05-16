@@ -30,7 +30,7 @@ const Chat: React.FC = () => {
   const [guestMessageCount, setGuestMessageCount] = useState(0);
   const [userMessageCount, setUserMessageCount] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [apiUrl, setApiUrl] = useState(() => {
+  const [apiUrl] = useState(() => {
     const saved = localStorage.getItem('apiUrl');
     if (saved && saved !== "undefined" && saved !== "null" && saved.trim() !== "") return saved;
     return import.meta.env.VITE_OLLAMA_ENDPOINT;
