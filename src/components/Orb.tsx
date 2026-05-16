@@ -66,13 +66,11 @@ const Orb: React.FC<OrbProps> = ({
           ? 'TAP TO BEGIN'
           : isPlaying
             ? (status?.toUpperCase() || 'SPEAKING...')
-            : (status?.includes('generating') || status?.includes('processing') || status?.includes('') || isGenerating)
-              ? (status?.includes('chunk') ? (normalizedText ? `"${normalizedText.substring(0, 30)}..."` : status.toUpperCase()) : `WARMING UP... ${progress}%`)
-              : status?.includes('decoding')
-                ? 'DECODING AUDIO...'
-                : isListening
-                  ? 'TAP TO SEND'
-                  : 'TAP TO TALK'}
+            : isGenerating
+              ? (status === 'idle' || !status ? 'THINKING...' : `GENERATING... ${progress}%`)
+              : isListening
+                ? 'TAP TO SEND'
+                : 'TAP TO TALK'}
       </div>
     </div>
   );
