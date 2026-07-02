@@ -30,10 +30,12 @@ const Chat: React.FC = () => {
   const [guestMessageCount, setGuestMessageCount] = useState(0);
   const [userMessageCount, setUserMessageCount] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const apiUrl = '/api/chat';
-  const healthUrl = '/api/health';
   const [serverStatus, setServerStatus] = useState<'checking' | 'online' | 'offline' | 'error'>('online');
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
+
+  const NVIDIA_CHAT_URL = 'https://integrate.api.nvidia.com/v1/chat/completions';
+  const NVIDIA_API_KEY = import.meta.env.VITE_NVIDIA_API_KEY;
+  const modelApiUrl = NVIDIA_CHAT_URL;
 
   useEffect(() => {
     if (darkMode) {
@@ -53,41 +55,20 @@ const Chat: React.FC = () => {
   const checkServerHealth = async () => {
     setServerStatus('checking');
     try {
-      const response = await fetch(healthUrl, {
-        method: 'GET',
-        headers: {
-          'ngrok-skip-browser-warning': 'true'
-        }
+      const response = await fetch(NVIDIA_CHAT_URL, {
+        method: 'OPTIONS'
       });
 
-      if (!response.ok) {
-        setServerStatus('error');
-        window.dispatchEvent(new CustomEvent('nanochat-server-error'));
-        return false;
+      if (response.ok || response.status === 204) {
+        setServerStatus('online');
+        return true;
       }
 
-      const text = await response.text();
-      let data: any = null;
-
-      try {
-        data = text ? JSON.parse(text) : {};
-      } catch {
-        console.warn('Health check returned non-JSON response:', text);
-        setServerStatus('error');
-        window.dispatchEvent(new CustomEvent('nanochat-server-error'));
-        return false;
-      }
-
-      console.log('Health Check Response:', data);
-      setServerStatus('online');
-      if (data?.message) {
-        message.info(`Server Status: ${data.message}`);
-      }
-      return true;
+      setServerStatus('offline');
+      return false;
     } catch (e) {
       console.error('Health check failed:', e);
-      setServerStatus('error');
-      window.dispatchEvent(new CustomEvent('nanochat-server-error'));
+      setServerStatus('offline');
       return false;
     }
   };
@@ -95,6 +76,14 @@ const Chat: React.FC = () => {
   useEffect(() => {
     checkServerHealth();
   }, []);
+
+  const extractBotText = (data: any) => {
+    return data?.message?.content
+      || data?.choices?.[0]?.message?.content
+      || data?.choices?.[0]?.delta?.content
+      || data?.content
+      || '';
+  };
 
   const generateGreeting = async (displayName: string | null) => {
     if (serverStatus !== 'online') return;
@@ -107,16 +96,17 @@ const Chat: React.FC = () => {
 
       const systemPrompt = SYSTEM_PROMPTS.GENERAL + '\n' + generateToolsDescription();
 
-      const response = await fetch(apiUrl, {
+      const response = await fetch(modelApiUrl, {
         method: 'POST',
         headers: {
+          Authorization: `Bearer ${NVIDIA_API_KEY}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           model: modelName,
           messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: promptText }
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: promptText }
           ],
           stream: false
         })
@@ -124,7 +114,7 @@ const Chat: React.FC = () => {
 
       if (response.ok) {
         const data = await response.json();
-        const botResponse = data.message?.content || "Hello! How can I help you today?";
+        const botResponse = extractBotText(data) || "Hello! How can I help you today?";
 
         if (isDevMode) {
           setMessages([{ text: botResponse, sender: 'bot', timestamp: new Date() }]);
@@ -181,7 +171,7 @@ const Chat: React.FC = () => {
 
       return () => unsubscribe();
     }
-  }, [auth?.currentUser, isDevMode, apiUrl, serverStatus]);
+  }, [auth?.currentUser, isDevMode, serverStatus]);
 
   useEffect(() => {
     scrollToBottom();
@@ -275,18 +265,22 @@ const Chat: React.FC = () => {
       const modelName = localStorage.getItem('modelName') || 'gemma3:1b';
       const systemPrompt = SYSTEM_PROMPTS.GENERAL + '\n' + generateToolsDescription();
 
-      const response = await fetch(apiUrl, {
+      if (!NVIDIA_API_KEY) {
+        throw new Error('Missing NVIDIA API key. Set VITE_NVIDIA_API_KEY in your environment.');
+      }
+
+      const response = await fetch(modelApiUrl, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'ngrok-skip-browser-warning': 'true'
+          Authorization: `Bearer ${NVIDIA_API_KEY}`,
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           model: modelName,
           messages: [
-            { role: "system", content: systemPrompt },
+            { role: 'system', content: systemPrompt },
             ...currentHistory,
-            { role: "user", content: userMsg }
+            { role: 'user', content: userMsg }
           ],
           stream: false
         })
@@ -299,7 +293,7 @@ const Chat: React.FC = () => {
       setServerStatus('online');
 
       const data = await response.json();
-      const botResponse = data.message?.content || "I didn't understand that.";
+      const botResponse = extractBotText(data) || "I didn't understand that.";
 
       if (isDevMode || (!auth?.currentUser && guestMessageCount < 3)) { // Allow bot reply for guest
         setMessages(prev => [...prev, { text: botResponse, sender: 'bot', timestamp: new Date() }]);

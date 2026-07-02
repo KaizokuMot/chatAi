@@ -1,7 +1,3 @@
 {
-  "functions": {
-    "api/**/*.ts": {
-      "runtime": "vercel-nodejs@20.x"
-    }
-  }
+  "_comment": "vercel.json is disabled because the previous custom configuration caused deployment runtime version errors.\n Remove this placeholder and restore a valid Vercel configuration only if needed."
 }
