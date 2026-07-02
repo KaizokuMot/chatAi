@@ -75,23 +75,15 @@ const App: React.FC = () => {
   // Server health check
   useEffect(() => {
     let cancelled = false;
-    const apiUrl = localStorage.getItem('apiUrl') || import.meta.env.VITE_OLLAMA_ENDPOINT || 'https://necessitative-freeda-serologically.ngrok-free.dev';
+    const healthUrl = '/api/health';
 
     const checkHealth = async (attempt: number) => {
       if (cancelled) return;
-
-      if (!apiUrl || apiUrl === 'undefined' || apiUrl === 'null') {
-        setServerStatus('error');
-        setStatusMessage('No AI mode found!');
-        return;
-      }
 
       setStatusMessage(attempt > 0 ? `Reconnecting to server (attempt ${attempt + 1})...` : 'Connecting to AI server...');
       setServerStatus(attempt > 0 ? 'retrying' : 'checking');
 
       try {
-        const baseUrl = apiUrl.replace(/\/api\/chat$/, '');
-        const healthUrl = `${baseUrl}/api/health`;
         const response = await fetch(healthUrl, {
           method: 'GET',
           headers: { 'ngrok-skip-browser-warning': 'true' },
@@ -133,9 +125,7 @@ const App: React.FC = () => {
     setServerStatus('checking');
     setStatusMessage('Reconnecting...');
 
-    const apiUrl = localStorage.getItem('apiUrl') || import.meta.env.VITE_OLLAMA_ENDPOINT || 'https://necessitative-freeda-serologically.ngrok-free.dev';
-    const baseUrl = apiUrl?.replace(/\/api\/chat$/, '') || '';
-    const healthUrl = `${baseUrl}/api/health`;
+    const healthUrl = '/api/health';
 
     fetch(healthUrl, {
       method: 'GET',

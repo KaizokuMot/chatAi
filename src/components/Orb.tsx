@@ -27,13 +27,14 @@ const Orb: React.FC<OrbProps> = ({
 
 
   return (
-    <div 
-      className={`orb-container ${isListening ? 'active-listening' : ''} ${!isStarted ? 'not-started' : ''}`} 
-      onClick={onToggle}
-    >
+    <div className={`orb-container ${isListening ? 'active-listening' : ''} ${!isStarted ? 'not-started' : ''}`} onClick={onToggle}>
+      
+      {/* Timer moved ABOVE the button to prevent overlap */}
+      {(isListening || isPlaying) && duration && duration !== "00:00" && (
+        <div className="orb-timer-top">{duration}</div>
+      )}
+
       <div className={`orb-main ${isPlaying ? 'pulsing' : ''} ${isGenerating ? 'generating' : ''} ${isListening ? 'listening' : ''}`}>
-        
-        {/* Spinner during processing */}
         {(isGenerating || status === 'chunking') ? (
           <div className="orb-spinner-overlay">
             <Spin size="default" />
@@ -41,19 +42,12 @@ const Orb: React.FC<OrbProps> = ({
         ) : (
           <div className="orb-icon-overlay">
             {!isStarted ? (
-              <PlayCircleFilled style={{ fontSize: 24, color: 'rgba(255,255,255,0.9)' }} />
+              <PlayCircleFilled style={{ fontSize: 24 }} />
             ) : (isListening || isPlaying) ? (
-              <PauseOutlined style={{ fontSize: 24, color: 'rgba(255,255,255,0.9)' }} />
+              <PauseOutlined style={{ fontSize: 24 }} />
             ) : (
-              <PlayCircleFilled style={{ fontSize: 24, color: 'rgba(255,255,255,0.9)' }} />
+              <PlayCircleFilled style={{ fontSize: 24 }} />
             )}
-          </div>
-        )}
-
-        {/* Timer separated */}
-        {(isListening || isPlaying) && duration && duration !== "00:00" && (
-          <div className="orb-stats-overlay">
-            <div className="orb-timer-stable">{duration}</div>
           </div>
         )}
       </div>

@@ -82,19 +82,19 @@ const Sidebar: React.FC<SidebarProps> = ({
                             setMobileMenuOpen(false);
                         }}
                     >
-                     <span style={{ marginLeft: 12 }}>NanoChat</span>
+                      <span style={{ marginLeft: 12, fontSize: 12 }}>NanoChat</span>
                     </div>
 
                     {/* Therapy Sessions - New Option */}
-                    <div
+                    {/* <div
                         className={`menu-item ${isActive('/therapy') ? 'active' : ''}`}
                         onClick={() => {
                             navigate('/therapy');
                             setMobileMenuOpen(false);
                         }}
                     >
-                     <span style={{ marginLeft: 12 }}>Voice Chat</span>
-                    </div>
+                     <span style={{ marginLeft: 12, fontSize: 12 }}>Voice Chat</span>
+                    </div> */}
 
                     <div className="menu-item disabled">
                         <AppstoreOutlined /> <span style={{ marginLeft: 12 }}>Generated</span>
@@ -141,17 +141,17 @@ const Sidebar: React.FC<SidebarProps> = ({
                     </div>
                     <h3 style={{ margin: '0 0 2px 0', fontSize: 10, color: 'var(--sidebar-text)' }}>beta v.25.1.0</h3>
                     <p style={{ margin: 0, fontSize: 10, opacity: 0.6, color: 'var(--sidebar-text)' }}>
-                        Kalanzi Dixon
+                        Kalanzi Dixon & Emma Katungi "PAAPA"
                     </p>
                 </div>
 
                 {auth.currentUser || isDevMode ? (
                     <div className="menu-item" onClick={logout} style={{ marginBottom: 16, color: '#ff4d4f' }}>
-                        <LogoutOutlined /> <span style={{ marginLeft: 12 }}>{isDevMode ? 'Exit Dev Mode' : 'Log out'}</span>
+                        <LogoutOutlined /> <span style={{ marginLeft: 12, fontSize: 12 }}>{isDevMode ? 'Exit Dev Mode' : 'Log out'}</span>
                     </div>
                 ) : (
                     <div className="menu-item" onClick={() => setLoginModalVisible(true)} style={{ marginBottom: 16 }}>
-                        <LoginOutlined /> <span style={{ marginLeft: 12 }}>Log in</span>
+                        <LoginOutlined /> <span style={{ marginLeft: 12, fontSize: 12 }}>Log in</span>
                     </div>
                 )}
             </div>

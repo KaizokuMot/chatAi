@@ -1,24 +1,5 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef } from 'react';
 
-// ---------------------------------------------------------------------------
-// TTS URL resolution
-//  - Priority 1: localStorage key "ttsUrl"  (set this when the tunnel changes)
-//  - Priority 2: compile-time env var VITE_TTS_URL
-//  - Priority 3: localhost fallback for dev
-// ---------------------------------------------------------------------------
-function getTtsBaseUrl(): string {
-  return (
-    localStorage.getItem('ttsUrl') ||
-    (import.meta.env.VITE_TTS_URL as string | undefined) ||
-    'https://53fa-31-14-252-5.ngrok-free.app'
-  );
-}
-
-// ---------------------------------------------------------------------------
-// useMossVoice
-//  Calls POST /api/tts  → returns a WAV blob → plays via AudioContext
-//  No streaming, no WebSocket.  Voice is always "Della" (bella.wav preset).
-// ---------------------------------------------------------------------------
 export function useMossVoice() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isGeneratingVoice, setIsGeneratingVoice] = useState(false);
@@ -26,277 +7,159 @@ export function useMossVoice() {
   const [engineStatus, setEngineStatus] = useState<string>('idle');
   const [progress, setProgress] = useState<number>(0);
   const [chunkCount, setChunkCount] = useState<number>(0);
-  const [normalizedText, setNormalizedText] = useState<string | null>(null);
 
+  const watchdogRef = useRef<any>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
-  const watchdogRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // Track the current source so forceReset can stop it
-  const sourceRef = useRef<AudioBufferSourceNode | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  // Abort controller so in-flight requests can be cancelled
-  const abortRef = useRef<AbortController | null>(null);
 
-  // -------------------------------------------------------------------------
-  // Ensure AudioContext is ready
-  // -------------------------------------------------------------------------
   const prepareAudio = async () => {
     try {
       if (!audioCtxRef.current) {
-        const Ctx = window.AudioContext || (window as any).webkitAudioContext;
-        audioCtxRef.current = new Ctx();
+        const AudioContextClass = (window.AudioContext || (window as any).webkitAudioContext);
+        audioCtxRef.current = new AudioContextClass();
       }
       if (audioCtxRef.current.state === 'suspended') {
         await audioCtxRef.current.resume();
       }
-    } catch {
-      console.warn('AudioContext preparation failed');
+    } catch (_) {
+      console.warn("AudioContext preparation failed");
     }
   };
 
-  // -------------------------------------------------------------------------
-  // Play a WAV blob
-  // -------------------------------------------------------------------------
-  const playAudioFromBlob = useCallback((blob: Blob) => {
-    return new Promise<void>(async (resolve) => {
-      console.log(`[useMossVoice] Playing audio blob of size: ${blob.size} bytes`);
-      setEngineStatus('decoding...');
-      setIsSpeaking(true);
-
-      if (watchdogRef.current) clearTimeout(watchdogRef.current);
-      watchdogRef.current = setTimeout(() => {
-        setIsSpeaking(false);
-        setEngineStatus('idle');
-        resolve();
-      }, 60_000);
-
-      const onEnded = () => {
-        if (watchdogRef.current) clearTimeout(watchdogRef.current);
-        setIsSpeaking(false);
-        setEngineStatus('idle');
-        sourceRef.current = null;
-        audioRef.current = null;
-        resolve();
-      };
-
-      try {
-        await prepareAudio();
-        const arrayBuffer = await blob.arrayBuffer();
-        console.log(`[useMossVoice] Decoding audio data...`);
-        const audioBuffer = await audioCtxRef.current!.decodeAudioData(arrayBuffer);
-        console.log(`[useMossVoice] Audio decoded successfully. Duration: ${audioBuffer.duration.toFixed(2)}s`);
-        setEngineStatus('speaking...');
-        
-        const source = audioCtxRef.current!.createBufferSource();
-        source.buffer = audioBuffer;
-        
-        // Apply speech speed from localStorage
-        const speed = parseFloat(localStorage.getItem('tts_speed') || '1.1');
-        source.playbackRate.value = speed;
-
-        source.connect(audioCtxRef.current!.destination);
-        source.onended = onEnded;
-        sourceRef.current = source;
-        source.start(0);
-      } catch (err) {
-        console.warn('[useMossVoice] WebAudio decode failed, falling back to HTML Audio:', err);
-        // Fallback to HTML audio element
-        const url = URL.createObjectURL(blob);
-        const audio = new Audio(url);
-        audioRef.current = audio;
-        audio.onended = () => {
-          console.log('[useMossVoice] HTML Audio playback ended');
-          URL.revokeObjectURL(url);
-          onEnded();
-        };
-        audio.onerror = (e) => {
-          console.error('[useMossVoice] HTML Audio error:', e);
-          URL.revokeObjectURL(url);
-          onEnded();
-        };
-        audio.play().catch(e => {
-          console.error('[useMossVoice] HTML Audio play blocked:', e);
-          onEnded();
-        });
-      }
-    });
-  }, []);
-
-  // -------------------------------------------------------------------------
-  // Generate a single chunk of text via POST /api/tts
-  // -------------------------------------------------------------------------
-  const generateChunk = useCallback(async (text: string, signal: AbortSignal): Promise<{blob: Blob, normalized: string} | null> => {
-    const baseUrl = getTtsBaseUrl();
-    const url = `${baseUrl}/api/tts`;
-
-    console.log(`[useMossVoice] Generating chunk: "${text.substring(0, 30)}..." at ${url}`);
-    
-    // Create a timeout signal for the request (30 seconds per sentence)
-    const timeoutId = setTimeout(() => {
-      // We don't abort the main signal, just this individual chunk if it takes too long
-    }, 30000);
-
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'bypass-tunnel-reminder': 'true',
-        'ngrok-skip-browser-warning': 'true',
-      },
-      body: JSON.stringify({ 
-         text, 
-        voice: 'Ava',
-        cpu_threads: parseInt(localStorage.getItem('tts_cpuThreads') || '8') || 8,
-        
-        // MOSS-TTS-Nano natively relies on 'sdpa' for clean CPU processing.
-        // Try changing 'model_default' to 'sdpa' to fix structural glitches.
-        attn_implementation: localStorage.getItem('tts_attnBackend') || 'sdpa',
-        
-        // MOSS SPEED TWEAK: Prevents the "hi... how..." word dragging
-        // MATURITY FIX: Stabilized pitch and vocabulary for an adult tone
-        text_temperature: 0.9,
-        text_top_p: 1.0, 
-        text_top_k: 25, 
-        
-        // VOICE FIX: Lowered temperature to remove the "peppy" child-like variation
-        audio_temperature: 0.8,
-        audio_top_p: 1.0,
-        audio_top_k: 1.0, 
-        audio_repetition_penalty: 1.1,
-       }),
-      signal,
-    });
-    
-    clearTimeout(timeoutId);
-    console.log(`[useMossVoice] Chunk response status: ${response.status}`);
-
-    if (!response.ok) {
-      throw new Error(`TTS server error ${response.status}: ${response.statusText}`);
-    }
-
-    const contentType = response.headers.get('content-type');
-    console.log(`[useMossVoice] Content-Type: ${contentType}`);
-    
-    // CASE 1: New JSON API (with metadata)
-    if (contentType?.includes('application/json')) {
-      const data = await response.json();
-      if (data.status === 'success' && data.audio_base64) {
-        const binaryString = window.atob(data.audio_base64);
-        const bytes = new Uint8Array(binaryString.length);
-        for (let i = 0; i < binaryString.length; i++) {
-          bytes[i] = binaryString.charCodeAt(i);
-        }
-        return {
-          blob: new Blob([bytes], { type: 'audio/wav' }),
-          normalized: data.normalized_text
-        };
-      }
-    } 
-    
-    // CASE 2: Legacy Binary API (raw WAV)
-    const blob = await response.blob();
-    return {
-      blob,
-      normalized: text // Fallback to original text if server is old
-    };
-  }, []);
-
-  // -------------------------------------------------------------------------
-  // speakText – entry point called from Therapy / Chat
-  //   Splits text into sentences, generates + plays each one sequentially.
-  // -------------------------------------------------------------------------
-  const speakText = useCallback(async (fullText: string) => {
-    // Cancel any in-flight request
-    if (abortRef.current) abortRef.current.abort();
-    abortRef.current = new AbortController();
-
-    // PARAGRAPH CHUNKING: Splits by paragraphs to bypass the 512-token engine limit 
-    // while keeping sentences fluid within each block.
-    const cleaned = fullText
-      .split(/\n\n+/)
-      .map(s => s.trim())
-      .filter(s => s.length > 0);
+  const speakText = async (fullText: string) => {
+    // 1. Split text into smaller chunks (sentences) for faster first-response
+    const sentences = fullText.match(/[^.!?]+[.!?]+/g) || [fullText];
 
     setError(null);
     setIsGeneratingVoice(true);
-    setEngineStatus('generating full audio...');
+    setEngineStatus('warming up...');
     setProgress(0);
-    setChunkCount(1);
-    await prepareAudio();
+    setChunkCount(sentences.length);
+    prepareAudio();
 
-    let nextChunkPromise: Promise<{blob: Blob, normalized: string} | null> | null = null;
-
-    for (let i = 0; i < cleaned.length; i++) {
-      if (abortRef.current.signal.aborted) break;
+    // Generate each sentence for faster first-response
+    for (let i = 0; i < sentences.length; i++) {
       try {
-        setEngineStatus(`generating chunk ${i + 1}/${cleaned.length}...`);
-        setProgress(Math.round(((i) / cleaned.length) * 100));
-
-        // Use pre-fetched result if it's the one we need, else generate
-        const result = (nextChunkPromise && i > 0) 
-          ? await nextChunkPromise 
-          : await generateChunk(cleaned[i], abortRef.current.signal);
-          
-        if (!result) continue;
-
-        // Start pre-fetching the NEXT chunk while this one is about to play
-        if (i + 1 < cleaned.length) {
-          nextChunkPromise = generateChunk(cleaned[i+1], abortRef.current.signal);
-        }
-
-        setNormalizedText(result.normalized);
-        setProgress(Math.round(((i + 1) / cleaned.length) * 100));
-        
-        setIsGeneratingVoice(false); 
-        await playAudioFromBlob(result.blob);
-        setIsGeneratingVoice(true); 
-
-        await new Promise(res => setTimeout(res, 80));
+        await processText(sentences[i].trim());
       } catch (err: any) {
-        if (err?.name === 'AbortError') break;
-        const msg = err?.message ?? 'Unknown TTS error';
-        setError(msg);
-        console.error('[useMossVoice] chunk error:', msg);
-        setIsGeneratingVoice(false);
-        setEngineStatus('error');
-        break; // Stop if there's an error
+        setError(`Error processing sentence ${i + 1}: ${err.message || 'Unknown error'}`);
       }
     }
+  };
 
+  const processText = async (text: string) => {
+    const baseUrl = "https://thick-coins-travel.loca.lt";
+    const apiTtsUrl = `${baseUrl}/api/tts`;
+    const wsUrl = `wss://thick-coins-travel.loca.lt/api/tts/ws`;
+
+    try {
+      const socket = new WebSocket(wsUrl);
+      socket.onopen = () => {
+        socket.send(JSON.stringify({ text, voice: "Dixon" }));
+      };
+
+      socket.onerror = (_) => {
+        setError('WebSocket connection failed');
+      };
+
+      socket.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.status) setEngineStatus(data.status);
+          if (data.progress !== undefined) setProgress(data.progress);
+
+          if (data.status === 'complete' || data.status === 'Loading audio...' || data.audio_url) {
+            const path = data.audio_url || data.url;
+            if (path) {
+              const fullUrl = path.startsWith('http') ? path : `${baseUrl}${path}`;
+              fetchAndPlayAudio(fullUrl);
+              socket.close();
+            }
+          }
+        } catch (_) {
+          setError('Failed to parse server response');
+        }
+      };
+
+      fetch(apiTtsUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'bypass-tunnel-reminder': 'true' },
+        credentials: 'include',
+        body: JSON.stringify({ text })
+      }).catch((_) => {
+        setError('TTS API request failed');
+      });
+
+    } catch (err: any) {
+      setError(err.message || 'Text processing failed');
+      setIsGeneratingVoice(false);
+      setEngineStatus('idle');
+    }
+  };
+
+  const fetchAndPlayAudio = async (url: string) => {
+    try {
+      const resp = await fetch(url, {
+        headers: { 'bypass-tunnel-reminder': 'true' },
+        credentials: 'include'
+      });
+      if (resp.ok) {
+        const blob = await resp.blob();
+        playAudioFromBlob(blob);
+      } else {
+        setError(`Failed to fetch audio: ${resp.statusText}`);
+      }
+    } catch (e: any) {
+      setError(`Audio fetch failed: ${e.message || 'Unknown error'}`);
+      setIsGeneratingVoice(false);
+    }
+  };
+
+  const playAudioFromBlob = async (blob: Blob) => {
     setIsGeneratingVoice(false);
-    setEngineStatus('idle');
-    setProgress(100);
-  }, [generateChunk, playAudioFromBlob]);
+    setIsSpeaking(true);
+    setEngineStatus("speaking...");
 
-  // -------------------------------------------------------------------------
-  // forceReset – stop everything immediately
-  // -------------------------------------------------------------------------
-  const forceReset = useCallback(() => {
-    if (abortRef.current) abortRef.current.abort();
     if (watchdogRef.current) clearTimeout(watchdogRef.current);
-    if (sourceRef.current) {
-      try { sourceRef.current.stop(); } catch { /* already stopped */ }
-      sourceRef.current = null;
+    watchdogRef.current = setTimeout(() => {
+      setIsSpeaking(false);
+      setEngineStatus('idle');
+    }, 20000);
+
+    try {
+      await prepareAudio();
+      const arrayBuffer = await blob.arrayBuffer();
+      const audioBuffer = await audioCtxRef.current!.decodeAudioData(arrayBuffer);
+      const source = audioCtxRef.current!.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(audioCtxRef.current!.destination);
+
+      source.onended = () => {
+        if (watchdogRef.current) clearTimeout(watchdogRef.current);
+        setIsSpeaking(false);
+        setEngineStatus('idle');
+      };
+      source.start(0);
+    } catch (err) {
+      console.error("AudioContext failed", err);
+      const audio = new Audio(URL.createObjectURL(blob));
+      audio.onended = () => {
+        if (watchdogRef.current) clearTimeout(watchdogRef.current);
+        setIsSpeaking(false);
+        setEngineStatus('idle');
+      };
+      audio.play().catch(() => {
+        setIsSpeaking(false);
+        setEngineStatus('idle');
+      });
     }
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current = null;
-    }
+  };
+
+  const forceReset = () => {
+    if (watchdogRef.current) clearTimeout(watchdogRef.current);
     setIsSpeaking(false);
     setIsGeneratingVoice(false);
     setEngineStatus('idle');
-    setProgress(0);
-  }, []);
-
-  return {
-    speakText,
-    isSpeaking,
-    isGeneratingVoice,
-    error,
-    engineStatus,
-    setEngineStatus,
-    progress,
-    chunkCount,
-    normalizedText,
-    forceReset,
   };
+
+  return { speakText, isSpeaking, isGeneratingVoice, error, engineStatus, progress, chunkCount, forceReset };
 }

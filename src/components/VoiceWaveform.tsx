@@ -16,7 +16,7 @@ const VoiceWaveform: React.FC<VoiceWaveformProps> = ({
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const dataArrayRef = useRef<Uint8Array | null>(null);
-  const phaseRef = useRef(0);
+  const phaseRef = useRef<number>(0);
 
   useEffect(() => {
     // Start drawing IMMEDIATELY for constant presence
@@ -46,7 +46,7 @@ const VoiceWaveform: React.FC<VoiceWaveformProps> = ({
   };
 
   const stopAudio = () => {
-    if (animationRef.current) cancelAnimationFrame(animationRef.current);
+    if (animationRef.current) cancelAnimationFrame(animationRef.current as number);
     if (audioContextRef.current) audioContextRef.current.close();
   };
 
@@ -65,11 +65,13 @@ const VoiceWaveform: React.FC<VoiceWaveformProps> = ({
       volume = sum / dataArrayRef.current.length;
     }
 
-    // Baseline "Phantom" movement if silent
-    const finalVolume = volume > 5 ? volume : (10 + Math.sin(Date.now() / 1000) * 5);
+    // Fluid, sinusoidal "ocean ripple" movement if silent
+    const phantomPhase = Date.now() / 2000;
+    const phantomVolume = 8 + Math.sin(phantomPhase) * 4;
+    const finalVolume = volume > 5 ? volume : phantomVolume;
 
     // If Devon is speaking, simulate volume
-    const speakingVolume = isDevonSpeaking ? (30 + Math.sin(Date.now() / 100) * 15) : finalVolume;
+    const speakingVolume = isDevonSpeaking ? (35 + Math.sin(Date.now() / 150) * 15) : finalVolume;
 
     const width = canvas.width;
     const height = canvas.height;

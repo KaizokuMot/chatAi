@@ -16,6 +16,7 @@
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff; /* Default icon color */
   box-shadow: 
     0 4px 15px rgba(0, 0, 0, 0.2),
     0 0 20px rgba(0, 210, 255, 0.2);
@@ -25,6 +26,28 @@
   justify-content: center;
   animation: breathingPulse 5s infinite ease-in-out;
   z-index: 5;
+}
+
+/* Light Mode Soft Gray Ball */
+[data-theme='light'] .orb-main {
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: #555;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.orb-timer-top {
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: inherit;
+  opacity: 0.8;
+  letter-spacing: 2px;
 }
 
 .orb-main:hover {

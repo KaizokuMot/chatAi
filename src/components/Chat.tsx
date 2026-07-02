@@ -30,11 +30,8 @@ const Chat: React.FC = () => {
   const [guestMessageCount, setGuestMessageCount] = useState(0);
   const [userMessageCount, setUserMessageCount] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [apiUrl] = useState(() => {
-    const saved = localStorage.getItem('apiUrl');
-    if (saved && saved !== "undefined" && saved !== "null" && saved.trim() !== "") return saved;
-    return import.meta.env.VITE_OLLAMA_ENDPOINT;
-  });
+  const apiUrl = '/api/chat';
+  const healthUrl = '/api/health';
   const [serverStatus, setServerStatus] = useState<'checking' | 'online' | 'offline' | 'error'>('online');
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
 
@@ -54,21 +51,12 @@ const Chat: React.FC = () => {
   const hasGreeted = useRef(false);
 
   const checkServerHealth = async () => {
-    if (!apiUrl) {
-      setServerStatus('error');
-      window.dispatchEvent(new CustomEvent('nanochat-server-error'));
-      return false;
-    }
     setServerStatus('checking');
     try {
-      // Base URL from /api/chat
-      const baseUrl = apiUrl.replace(/\/api\/chat$/, '');
-      const healthUrl = `${baseUrl}/api/health`;
-
       const response = await fetch(healthUrl, {
         method: 'GET',
         headers: {
-          'ngrok-skip-browser-warning': 'true' // Helpful for ngrok links
+          'ngrok-skip-browser-warning': 'true'
         }
       });
 
@@ -97,7 +85,7 @@ const Chat: React.FC = () => {
 
   useEffect(() => {
     checkServerHealth();
-  }, [apiUrl]);
+  }, []);
 
   const generateGreeting = async (displayName: string | null) => {
     if (serverStatus !== 'online') return;
@@ -278,7 +266,7 @@ const Chat: React.FC = () => {
       const modelName = localStorage.getItem('modelName') || 'gemma3:1b';
       const systemPrompt = SYSTEM_PROMPTS.GENERAL + '\n' + generateToolsDescription();
 
-      const response = await fetch(apiUrl.endsWith('/api/chat') ? apiUrl : `${apiUrl}/api/chat`, {
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
