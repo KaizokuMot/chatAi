@@ -60,23 +60,32 @@ const Chat: React.FC = () => {
         }
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        console.log("Health Check Response:", data);
-        setServerStatus('online');
-        // If there's a message in the health check, show it
-        if (data.message) {
-          message.info(`Server Status: ${data.message}`);
-        }
-        return true;
-      } else {
-        // Non-OK response means server isn't healthy
+      if (!response.ok) {
         setServerStatus('error');
         window.dispatchEvent(new CustomEvent('nanochat-server-error'));
         return false;
       }
+
+      const text = await response.text();
+      let data: any = null;
+
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch {
+        console.warn('Health check returned non-JSON response:', text);
+        setServerStatus('error');
+        window.dispatchEvent(new CustomEvent('nanochat-server-error'));
+        return false;
+      }
+
+      console.log('Health Check Response:', data);
+      setServerStatus('online');
+      if (data?.message) {
+        message.info(`Server Status: ${data.message}`);
+      }
+      return true;
     } catch (e) {
-      console.error("Health check failed:", e);
+      console.error('Health check failed:', e);
       setServerStatus('error');
       window.dispatchEvent(new CustomEvent('nanochat-server-error'));
       return false;
@@ -347,11 +356,12 @@ const Chat: React.FC = () => {
         <div style={{ padding: '24px 24px 20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-topbar)', borderBottom: '1px solid var(--border-color)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <Button icon={<MenuFoldOutlined />} onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="mobile-only-btn" style={{ display: 'none' }} />
-            <div style={{ marginLeft: 8, display: 'flex', alignItems: 'center' }}>
-              {serverStatus === 'checking' && <Spin size="small" />}
-              {serverStatus === 'online' && <span style={{ fontSize: 10, color: '#52c41a', background: 'rgba(82, 196, 26, 0.1)', padding: '2px 6px', borderRadius: 4 }}>ONLINE</span>}
-              {serverStatus === 'offline' && <span style={{ fontSize: 10, color: '#f5222d', background: 'rgba(245, 34, 45, 0.1)', padding: '2px 6px', borderRadius: 4 }}>OFFLINE</span>}
-              {serverStatus === 'error' && <span style={{ fontSize: 10, color: '#faad14', background: 'rgba(250, 173, 20, 0.1)', padding: '2px 6px', borderRadius: 4 }}>CONN ERROR</span>}
+            <div style={{ marginLeft: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 12, fontWeight: 600 }}>NVIDIA</span>
+              {serverStatus === 'checking' && <span style={{ fontSize: 10, color: '#1890ff', background: 'rgba(24, 144, 255, 0.12)', padding: '2px 6px', borderRadius: 4 }}>CONNECTING</span>}
+              {serverStatus === 'online' && <span style={{ fontSize: 10, color: '#52c41a', background: 'rgba(82, 196, 26, 0.1)', padding: '2px 6px', borderRadius: 4 }}>CONNECTED</span>}
+              {serverStatus === 'offline' && <span style={{ fontSize: 10, color: '#f5222d', background: 'rgba(245, 34, 45, 0.1)', padding: '2px 6px', borderRadius: 4 }}>DISCONNECTED</span>}
+              {serverStatus === 'error' && <span style={{ fontSize: 10, color: '#d48806', background: 'rgba(250, 173, 20, 0.12)', padding: '2px 6px', borderRadius: 4 }}>ERROR</span>}
             </div>
           </div>
         </div>
