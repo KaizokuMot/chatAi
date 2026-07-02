@@ -27,9 +27,14 @@ const Therapy: React.FC = () => {
   const [ttsStatus, setTtsStatus] = useState<'online' | 'offline' | 'checking'>('checking');
   const [adminSettingsVisible, setAdminSettingsVisible] = useState(false);
   const [loginModalVisible, setLoginModalVisible] = useState(false);
-  const [currentApiUrl, setCurrentApiUrl] = useState(localStorage.getItem('ollama_apiUrl'));
+  const [currentApiUrl, setCurrentApiUrl] = useState<string | null>(localStorage.getItem('ollama_apiUrl'));
   const [darkMode, setDarkMode] = useState(localStorage.getItem('theme') !== 'light');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const normalizeChatUrl = (url: string | null): string => {
+    if (!url) return '';
+    return url.endsWith('/api/chat') ? url : `${url.replace(/\/$/, '')}/api/chat`;
+  }
 
   // Voice & Brain Hooks
   const {
@@ -38,10 +43,9 @@ const Therapy: React.FC = () => {
     speakText,
     forceReset,
     progress,
-    chunkCount,
     engineStatus,
-    logs
   } = useMossVoice();
+  const logs: string[] = [];
 
   const [isGenerating, setIsGenerating] = useState(false);
   const hasWarmedUp = useRef(false);
@@ -73,7 +77,7 @@ const Therapy: React.FC = () => {
 
             // Warmup Brain
             if (currentApiUrl) {
-              const chatUrl = (currentApiUrl || '').endsWith('/api/chat') ? currentApiUrl : `${(currentApiUrl || '').replace(/\/$/, '')}/api/chat`;
+              const chatUrl = normalizeChatUrl(currentApiUrl);
               const modelName = localStorage.getItem('modelName') || 'gemma3:1b';
               fetch(chatUrl, {
                 method: 'POST',
@@ -83,14 +87,14 @@ const Therapy: React.FC = () => {
             }
           }
         } else {
-          setTtsStatus('error' as any);
+          setTtsStatus('offline');
         }
       } catch (err) {
         setTtsStatus('offline');
       }
 
       try {
-        const chatUrl = (currentApiUrl || '').endsWith('/api/chat') ? currentApiUrl : `${(currentApiUrl || '').replace(/\/$/, '')}/api/chat`;
+        const chatUrl = normalizeChatUrl(currentApiUrl);
         const response = await fetch(chatUrl.replace('/api/chat', '/api/tags'), {
           headers: { 'ngrok-skip-browser-warning': 'true' }
         });
@@ -242,7 +246,7 @@ const Therapy: React.FC = () => {
 
         {/* Minimalist Live Logs - Bottom Left */}
         <div className="live-logs-container">
-          {logs && logs.map((log, i) => (
+          {logs.map((log: string, i: number) => (
             <div key={i} className="log-entry" style={{ opacity: 1 - (i * 0.2) }}>
               {log}
             </div>

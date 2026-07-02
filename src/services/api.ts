@@ -6,7 +6,7 @@ export async function getTherapyResponse(
     temperature?: number
     top_p?: number
   }
-) {
+): Promise<any> {
   const payload = {
     model: options?.model || localStorage.getItem('modelName') || 'minimaxai/minimax-m3',
     messages,
@@ -30,8 +30,4 @@ export async function getTherapyResponse(
   }
 
   return response.json()
-}
-
-export default {
-  getTherapyResponse
 }

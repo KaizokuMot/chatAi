@@ -23,8 +23,8 @@ const countries = [
 interface SettingsProps {
   visible: boolean;
   onClose: () => void;
-  apiUrl: string;
-  setApiUrl: (url: string) => void;
+  apiUrl: string | null;
+  setApiUrl: (url: string | null) => void;
 }
 
 const Settings: React.FC<SettingsProps> = ({ visible, onClose, apiUrl, setApiUrl }) => {
